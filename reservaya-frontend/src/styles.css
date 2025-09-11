@@ -1,0 +1,14 @@
+/* Gradientes de hero-cards como en tus capturas */
+.gradient-blue { background: linear-gradient(90deg, #1f59ff, #1e40af); }
+.gradient-indigo { background: linear-gradient(90deg, #6a11cb, #2575fc); }
+.gradient-purple { background: linear-gradient(90deg, #7928ca, #ff0080); }
+
+.rounded-20 { border-radius: 1.25rem; }  /* ~rounded-4 en BS */
+.shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,.08); }
+
+.card-elevated { border: 0; box-shadow: 0 6px 20px rgba(0,0,0,.06); border-radius: 1rem; }
+.badge-pill { border-radius: 50rem; padding: .35rem .6rem; font-weight: 600; }
+
+.navbar-brand .logo {
+  width: 32px; height: 32px; border-radius: .5rem; background:#1f59ff; display:inline-flex; align-items:center; justify-content:center; color:#fff; margin-right:.5rem;
+}
