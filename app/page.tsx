@@ -2,29 +2,12 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
 import { Calendar, Users, Zap, ArrowRight, BookOpen, Dumbbell, Microscope, Users2 } from "lucide-react"
+import Navbar from "@/components/navbar"
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-slate-50">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-xl text-slate-900">ReservaYA</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Iniciar sesión</Button>
-            </Link>
-            <Link href="/register">
-              <Button className="bg-blue-600 hover:bg-blue-700">Registrarse</Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
@@ -119,6 +102,61 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Help Section */}
+      <section id="help" className="py-20 md:py-32 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">¿Necesitas ayuda?</h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Estamos aquí para apoyarte en cada paso del proceso
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <BookOpen className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Centro de ayuda</h3>
+              <p className="text-slate-600 mb-6">
+                Encuentra respuestas a las preguntas más frecuentes y guías detalladas
+              </p>
+              <Button variant="outline" className="w-full">
+                Ver documentación
+              </Button>
+            </Card>
+
+            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Soporte directo</h3>
+              <p className="text-slate-600 mb-6">
+                Nuestro equipo está disponible para ayudarte con cualquier consulta
+              </p>
+              <Link href="/contact">
+                <Button variant="outline" className="w-full">
+                  Contactar soporte
+                </Button>
+              </Link>
+            </Card>
+
+            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Zap className="w-8 h-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Configuración rápida</h3>
+              <p className="text-slate-600 mb-6">
+                Te ayudamos a configurar tu cuenta y espacios en minutos
+              </p>
+              <Button variant="outline" className="w-full">
+                Comenzar setup
+              </Button>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-blue-600 to-green-600 py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -184,9 +222,9 @@ export default function Home() {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition">
+                  <Link href="/contact" className="hover:text-white transition">
                     Contacto
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
+import Navbar from "@/components/navbar"
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -29,20 +30,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-slate-50">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl text-slate-900">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Mail className="w-5 h-5 text-white" />
-            </div>
-            ReservaYA
-          </Link>
-          <Link href="/">
-            <Button variant="ghost">Volver</Button>
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Header */}
