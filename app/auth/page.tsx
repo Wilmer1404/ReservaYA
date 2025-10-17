@@ -1,33 +1,80 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Calendar, ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import type React from "react";
+import { useState } from "react";
+import { useRouter } from 'next/navigation';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Calendar, ArrowLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
+import api from '@/lib/api'; // Importamos nuestro cliente Axios centralizado
+import { useAuthStore } from "@/store/auth-store"; // Importamos nuestro store de Zustand
 
 export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login")
+  const router = useRouter();
+  const { setToken } = useAuthStore(); // Obtenemos la función para guardar el token del store
+  
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [formData, setFormData] = useState({
+    name: "", // Campo para el nombre en el registro
     email: "",
     password: "",
     confirmPassword: "",
-    institutionName: "",
-    institutionType: "university",
-  })
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      if (activeTab === 'login') {
+        const response = await api.post('/auth/login', {
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        if (response.data && response.data.token) {
+          setToken(response.data.token); // Guardamos el token en el store global (y en localStorage)
+          router.push('/dashboard');    // Redirigimos al dashboard
+        } else {
+          throw new Error("Respuesta de login inválida");
+        }
+      } else { // Lógica de Registro
+        if (formData.password !== formData.confirmPassword) {
+          setError("Las contraseñas no coinciden.");
+          setIsLoading(false);
+          return;
+        }
+        await api.post('/auth/register', {
+          name: formData.name, // Asegúrate de que el backend espera "name"
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        // Opcional: Mostrar un mensaje de éxito y cambiar a la pestaña de login
+        alert("¡Registro exitoso! Por favor, inicia sesión para continuar.");
+        setActiveTab("login");
+        // Limpiamos los campos para el login
+        setFormData({ name: "", email: formData.email, password: "", confirmPassword: "" });
+      }
+    } catch (err: any) {
+      console.error("Error de autenticación:", err);
+      // Extrae un mensaje de error más útil si está disponible en la respuesta del backend
+      const errorMessage = err.response?.data?.message || err.message || "Error en el proceso. Revisa tus credenciales o intenta de nuevo.";
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
@@ -52,18 +99,14 @@ export default function AuthPage() {
         {/* Tabs */}
         <div className="flex border-b border-slate-200">
           <button
-            onClick={() => setActiveTab("login")}
-            className={`flex-1 py-4 px-4 font-medium text-center transition-colors ${activeTab === "login" ? "text-blue-600 border-b-2 border-blue-600" : "text-slate-600 hover:text-slate-900"
-              }`}
+            onClick={() => { setActiveTab("login"); setError(null); }}
+            className={`flex-1 py-4 px-4 font-medium text-center transition-colors ${activeTab === "login" ? "text-blue-600 border-b-2 border-blue-600" : "text-slate-600 hover:text-slate-900"}`}
           >
             Iniciar sesión
           </button>
           <button
-            onClick={() => setActiveTab("register")}
-            className={`flex-1 py-4 px-4 font-medium text-center transition-colors ${activeTab === "register"
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-slate-600 hover:text-slate-900"
-              }`}
+            onClick={() => { setActiveTab("register"); setError(null); }}
+            className={`flex-1 py-4 px-4 font-medium text-center transition-colors ${activeTab === "register" ? "text-blue-600 border-b-2 border-blue-600" : "text-slate-600 hover:text-slate-900"}`}
           >
             Registrarse
           </button>
@@ -85,6 +128,7 @@ export default function AuthPage() {
                     onChange={handleInputChange}
                     className="w-full"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -97,50 +141,31 @@ export default function AuthPage() {
                     onChange={handleInputChange}
                     className="w-full"
                     required
+                    disabled={isLoading}
                   />
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" className="rounded" />
-                    <span className="text-slate-600">Recuérdame</span>
-                  </label>
-                  <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
-                    ¿Olvidaste tu contraseña?
-                  </a>
-                </div>
               </div>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2">Ingresar</Button>
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Ingresar
+              </Button>
             </>
           ) : (
             <>
               {/* Register Form */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Nombre de la institución</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nombre Completo</label>
                   <Input
                     type="text"
-                    name="institutionName"
-                    placeholder="Universidad Nacional"
-                    value={formData.institutionName}
+                    name="name"
+                    placeholder="Ej: Juan Pérez"
+                    value={formData.name}
                     onChange={handleInputChange}
                     className="w-full"
                     required
+                    disabled={isLoading}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de institución</label>
-                  <select
-                    name="institutionType"
-                    value={formData.institutionType}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="university">Universidad</option>
-                    <option value="school">Colegio</option>
-                    <option value="sports">Centro Deportivo</option>
-                    <option value="library">Biblioteca</option>
-                    <option value="other">Otro</option>
-                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Correo institucional</label>
@@ -152,6 +177,7 @@ export default function AuthPage() {
                     onChange={handleInputChange}
                     className="w-full"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -164,6 +190,7 @@ export default function AuthPage() {
                     onChange={handleInputChange}
                     className="w-full"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -176,15 +203,21 @@ export default function AuthPage() {
                     onChange={handleInputChange}
                     className="w-full"
                     required
+                    disabled={isLoading}
                   />
                 </div>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" className="rounded" required />
-                  <span className="text-slate-600">Acepto los términos y condiciones</span>
-                </label>
               </div>
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-2">Crear cuenta</Button>
+              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-2" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Crear cuenta
+              </Button>
             </>
+          )}
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md text-sm">
+              <p>{error}</p>
+            </div>
           )}
 
           <p className="text-center text-sm text-slate-600 mt-4">
@@ -193,8 +226,9 @@ export default function AuthPage() {
                 ¿No tienes cuenta?{" "}
                 <button
                   type="button"
-                  onClick={() => setActiveTab("register")}
+                  onClick={() => { setActiveTab("register"); setError(null); }}
                   className="text-blue-600 hover:text-blue-700 font-medium"
+                  disabled={isLoading}
                 >
                   Regístrate aquí
                 </button>
@@ -204,8 +238,9 @@ export default function AuthPage() {
                 ¿Ya tienes cuenta?{" "}
                 <button
                   type="button"
-                  onClick={() => setActiveTab("login")}
+                  onClick={() => { setActiveTab("login"); setError(null); }}
                   className="text-blue-600 hover:text-blue-700 font-medium"
+                  disabled={isLoading}
                 >
                   Inicia sesión
                 </button>

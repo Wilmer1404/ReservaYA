@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
                   <XAxis dataKey="date" />
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
+                  <ChartLegend content={<ChartLegendContent payload={undefined} />} />
                   <Line type="monotone" dataKey="confirmadas" stroke="var(--color-confirmadas)" strokeWidth={2} />
                   <Line type="monotone" dataKey="pendientes" stroke="var(--color-pendientes)" strokeWidth={2} />
                 </LineChart>
@@ -224,7 +224,7 @@ export default function AnalyticsPage() {
                 <YAxis yAxisId="left" />
                 <YAxis yAxisId="right" orientation="right" />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <ChartLegend content={<ChartLegendContent />} />
+                <ChartLegend content={<ChartLegendContent payload={undefined} />} />
                 <Bar yAxisId="left" dataKey="usuarios" fill="#3b82f6" radius={[8, 8, 0, 0]} />
                 <Bar yAxisId="right" dataKey="reservas" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
               </BarChart>

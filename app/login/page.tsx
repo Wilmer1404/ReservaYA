@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
-import { AuthCard } from "@/components/auth/auth-card" // Componente reutilizable
+import { AuthCard } from "@/components/auth/auth-card"
 import { Button } from "@/components/ui/button"
 
 export default function LoginPage() {
