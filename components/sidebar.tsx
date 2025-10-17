@@ -2,7 +2,19 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Calendar, Settings, Users, Grid3x3, Menu, X, Clock, BarChart3 } from "lucide-react"
+import { useRouter } from "next/navigation"; // Importar useRouter para la redirección
+import { useAuthStore } from "@/store/auth-store"; // Importar el store de autenticación
+import {
+  Calendar,
+  Settings,
+  Users,
+  Grid3x3,
+  Menu,
+  X,
+  Clock,
+  BarChart3,
+  LogOut // Importar el ícono de LogOut
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface SidebarProps {
@@ -11,6 +23,14 @@ interface SidebarProps {
 
 export function Sidebar({ activeTab = "dashboard" }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter();
+  const { clearToken } = useAuthStore(); // Obtener la función para limpiar el token del store
+
+  // Función para manejar el cierre de sesión
+  const handleLogout = () => {
+    clearToken(); // Limpia el token del store y de localStorage
+    router.push('/auth'); // Redirige al usuario a la página de autenticación
+  };
 
   const menuItems = [
     { id: "dashboard", label: "Panel principal", icon: Grid3x3, href: "/dashboard" },
@@ -28,15 +48,15 @@ export function Sidebar({ activeTab = "dashboard" }: SidebarProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-lg"
+        aria-label="Toggle Menu"
       >
         {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static top-0 left-0 h-screen w-64 bg-slate-900 text-white transition-transform duration-300 z-40 ${
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}
+        className={`fixed md:static top-0 left-0 h-screen w-64 bg-slate-900 text-white transition-transform duration-300 z-40 ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          }`}
       >
         <div className="p-6 border-b border-slate-800">
           <div className="flex items-center gap-2">
@@ -53,9 +73,8 @@ export function Sidebar({ activeTab = "dashboard" }: SidebarProps) {
               key={item.id}
               href={item.href}
               onClick={() => setIsOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                activeTab === item.id ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-slate-800"
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === item.id ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-slate-800"
+                }`}
             >
               <item.icon className="w-5 h-5" />
               <span>{item.label}</span>
@@ -65,9 +84,11 @@ export function Sidebar({ activeTab = "dashboard" }: SidebarProps) {
 
         <div className="absolute bottom-6 left-4 right-4">
           <Button
+            onClick={handleLogout} // Asignar la función de logout al evento onClick
             variant="outline"
-            className="w-full text-slate-300 border-slate-700 hover:bg-slate-800 bg-transparent"
+            className="w-full text-slate-300 border-slate-700 hover:bg-slate-800 bg-transparent flex items-center justify-center"
           >
+            <LogOut className="w-4 h-4 mr-2" />
             Cerrar sesión
           </Button>
         </div>

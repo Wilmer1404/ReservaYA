@@ -1,73 +1,89 @@
 "use client"
 
-import { DashboardPage } from "@/components/dashboard/dashboard-page" // Componente reutilizable
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Filter, Download } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Download, Loader2 } from "lucide-react";
+import api from "@/lib/api";
+import { 
+  Table, 
+  TableHeader, 
+  TableRow, 
+  TableHead, 
+  TableBody, 
+  TableCell 
+} from "@/components/ui/table";
+
+// Interfaces para tipar los datos de la API
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Space {
+  id: number;
+  name: string;
+  type: string;
+}
+
+interface Reservation {
+  id: number;
+  user: User;
+  space: Space;
+  startTime: string;
+  endTime: string;
+  status: string;
+}
+
+// Función para formatear la fecha y hora
+const formatDateTime = (isoString: string) => {
+  const date = new Date(isoString);
+  return date.toLocaleString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
 
 export default function ReservationsPage() {
-  const [filterStatus, setFilterStatus] = useState("all")
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const reservations = [
-    {
-      id: 1,
-      space: "Cancha de fútbol A",
-      user: "Juan García",
-      date: "2025-10-20",
-      time: "14:00 - 15:30",
-      status: "confirmada",
-      capacity: "22 personas",
-    },
-    {
-      id: 2,
-      space: "Sala de estudio 1",
-      user: "María López",
-      date: "2025-10-20",
-      time: "15:00 - 17:00",
-      status: "confirmada",
-      capacity: "30 personas",
-    },
-    {
-      id: 3,
-      space: "Laboratorio de química",
-      user: "Carlos Rodríguez",
-      date: "2025-10-21",
-      time: "09:00 - 11:00",
-      status: "pendiente",
-      capacity: "25 personas",
-    },
-    {
-      id: 4,
-      space: "Cancha de básquet",
-      user: "Ana Martínez",
-      date: "2025-10-21",
-      time: "16:00 - 17:30",
-      status: "confirmada",
-      capacity: "20 personas",
-    },
-    {
-      id: 5,
-      space: "Sala de conferencias",
-      user: "Pedro Sánchez",
-      date: "2025-10-22",
-      time: "10:00 - 12:00",
-      status: "cancelada",
-      capacity: "50 personas",
-    },
-    {
-      id: 6,
-      space: "Biblioteca",
-      user: "Laura Fernández",
-      date: "2025-10-22",
-      time: "13:00 - 15:00",
-      status: "confirmada",
-      capacity: "100 personas",
-    },
-  ]
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        setIsLoading(true);
+        const response = await api.get<Reservation[]>("/reservations");
+        setReservations(response.data);
+        setError(null);
+      } catch (err) {
+        console.error("Error al cargar las reservas:", err);
+        setError("No se pudieron cargar las reservas. Intenta de nuevo más tarde.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const filteredReservations =
-    filterStatus === "all" ? reservations : reservations.filter((r) => r.status === filterStatus)
+    fetchReservations();
+  }, []);
+
+  const getStatusBadge = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "confirmed":
+        return <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">Confirmada</span>;
+      case "pending":
+        return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium">Pendiente</span>;
+      case "cancelled":
+        return <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-medium">Cancelada</span>;
+      default:
+        return <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-full font-medium">{status}</span>;
+    }
+  };
 
   return (
     <DashboardPage
@@ -81,17 +97,46 @@ export default function ReservationsPage() {
         </Button>
       }
     >
-      {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        {/* ... tus botones de filtro ... */}
-      </div>
-
-      {/* Reservations Table */}
       <Card className="border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          {/* ... tu tabla de reservaciones ... */}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-600 p-8">{error}</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Espacio</TableHead>
+                <TableHead>Usuario</TableHead>
+                <TableHead>Inicio</TableHead>
+                <TableHead>Fin</TableHead>
+                <TableHead>Estado</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {reservations.length > 0 ? (
+                reservations.map((reservation) => (
+                  <TableRow key={reservation.id}>
+                    <TableCell className="font-medium">{reservation.space.name}</TableCell>
+                    <TableCell>{reservation.user.name}</TableCell>
+                    <TableCell>{formatDateTime(reservation.startTime)}</TableCell>
+                    <TableCell>{formatDateTime(reservation.endTime)}</TableCell>
+                    <TableCell>{getStatusBadge(reservation.status)}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-slate-500 py-8">
+                    No hay reservas para mostrar.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        )}
       </Card>
     </DashboardPage>
-  )
+  );
 }
