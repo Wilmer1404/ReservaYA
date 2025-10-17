@@ -1,93 +1,125 @@
 "use client"
 
+import type React from "react";
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Calendar, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import api from '@/lib/api';
 import { useAuthStore } from "@/store/auth-store";
-
-// Esquema de validación para el Login
-const loginSchema = z.object({
-  email: z.string().email({ message: "Por favor, introduce un correo válido." }),
-  password: z.string().min(1, { message: "La contraseña es requerida." }),
-});
-
-// Esquema de validación para el Registro
-const registerSchema = z.object({
-  name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres." }),
-  email: z.string().email({ message: "Por favor, introduce un correo válido." }),
-  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Las contraseñas no coinciden.",
-  path: ["confirmPassword"], // Campo donde se mostrará el error
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-type RegisterFormValues = z.infer<typeof registerSchema>;
+import { useEffect } from "react";
 
 export default function AuthPage() {
   const router = useRouter();
-  const { setToken } = useAuthStore();
+  const { setToken, clearAllAuthStorage, token } = useAuthStore();
+
+  // Limpiar automáticamente tokens antiguos al cargar la página
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Verificar si hay múltiples entradas de auth en localStorage (indica corrupción)
+      const allKeys = Object.keys(localStorage);
+      const authKeys = allKeys.filter(key => key.includes('auth'));
+      
+      if (authKeys.length > 1) {
+        // Hay múltiples entradas de auth, limpiar todo
+        clearAllAuthStorage();
+      }
+    }
+  }, [clearAllAuthStorage]);
+
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-
-  const form = useForm<LoginFormValues | RegisterFormValues>({
-    resolver: zodResolver(activeTab === "login" ? loginSchema : registerSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
-  
-  const { formState: { isSubmitting } } = form;
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = async (values: LoginFormValues | RegisterFormValues) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    console.log('🔄 Submitting form:', activeTab, { email: formData.email });
+
     try {
       if (activeTab === 'login') {
+        console.log('🔐 Attempting login...');
         const response = await api.post('/auth/login', {
-          email: values.email,
-          password: values.password,
+          email: formData.email,
+          password: formData.password,
         });
-        
+
+        console.log('✅ Login response:', response.data);
+
         if (response.data && response.data.token) {
-          toast.success("¡Bienvenido de vuelta!");
           setToken(response.data.token);
+          console.log('🎉 Login successful, redirecting to dashboard');
           router.push('/dashboard');
         } else {
-          throw new Error("Respuesta de login inválida");
+          throw new Error("Respuesta de login inválida - no se recibió token");
         }
       } else { // Lógica de Registro
-        const registerValues = values as RegisterFormValues;
-        await api.post('/auth/register', {
-          name: registerValues.name,
-          email: registerValues.email,
-          password: registerValues.password,
+        if (formData.password !== formData.confirmPassword) {
+          setError("Las contraseñas no coinciden.");
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('📝 Attempting registration...');
+        const response = await api.post('/auth/register', {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
         });
-        
-        toast.success("¡Registro exitoso!", {
-          description: "Por favor, inicia sesión para continuar.",
-        });
+
+        console.log('✅ Registration response:', response.data);
+        alert("¡Registro exitoso! Por favor, inicia sesión para continuar.");
         setActiveTab("login");
-        form.reset({ email: registerValues.email }); // Resetea el form manteniendo el email
+        setFormData({ name: "", email: formData.email, password: "", confirmPassword: "" });
       }
     } catch (err: any) {
-      console.error("Error de autenticación:", err);
-      const errorMessage = err.response?.data?.message || err.message || "Credenciales incorrectas o error en el servidor.";
-      toast.error("Error de autenticación", {
-        description: errorMessage,
-      });
+      console.error("❌ Error de autenticación:", err);
+      
+      let errorMessage = "Ocurrió un error inesperado.";
+      
+      if (err.code === 'ECONNREFUSED' || err.code === 'ERR_NETWORK') {
+        errorMessage = "No se puede conectar al servidor. Verifica que el backend esté funcionando en http://localhost:8080";
+      } else if (err.response) {
+        // Error del servidor con respuesta
+        const responseData = err.response.data;
+        
+        // Detectar errores específicos de JWT y autenticación
+        if (err.response.status === 403 || err.response.status === 401) {
+          // La limpieza ya se hace automáticamente en el interceptor de API
+          errorMessage = "Sesión expirada. Por favor, intenta de nuevo.";
+        } else if (typeof responseData === 'string' && (responseData.includes('JWT') || responseData.includes('signature'))) {
+          // La limpieza ya se hace automáticamente en el interceptor de API
+          errorMessage = "Datos de sesión actualizados. Intenta nuevamente.";
+        } else {
+          errorMessage = responseData?.message || `Error del servidor: ${err.response.status}`;
+        }
+      } else if (err.request) {
+        // Error de red sin respuesta
+        errorMessage = "Error de conexión. Verifica tu conexión a internet y que el backend esté funcionando.";
+      } else {
+        // Otro tipo de error
+        errorMessage = err.message || "Error desconocido";
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -110,89 +142,154 @@ export default function AuthPage() {
         </div>
 
         <div className="flex border-b border-slate-200">
-          <button onClick={() => { setActiveTab("login"); form.reset(); }} className={`flex-1 py-4 px-4 font-medium text-center transition-colors ${activeTab === "login" ? "text-blue-600 border-b-2 border-blue-600" : "text-slate-600 hover:text-slate-900"}`}>
+          <button
+            onClick={() => { setActiveTab("login"); setError(null); }}
+            className={`flex-1 py-4 px-4 font-medium text-center transition-colors ${activeTab === "login" ? "text-blue-600 border-b-2 border-blue-600" : "text-slate-600 hover:text-slate-900"}`}
+          >
             Iniciar sesión
           </button>
-          <button onClick={() => { setActiveTab("register"); form.reset(); }} className={`flex-1 py-4 px-4 font-medium text-center transition-colors ${activeTab === "register" ? "text-blue-600 border-b-2 border-blue-600" : "text-slate-600 hover:text-slate-900"}`}>
+          <button
+            onClick={() => { setActiveTab("register"); setError(null); }}
+            className={`flex-1 py-4 px-4 font-medium text-center transition-colors ${activeTab === "register" ? "text-blue-600 border-b-2 border-blue-600" : "text-slate-600 hover:text-slate-900"}`}
+          >
             Registrarse
           </button>
         </div>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="p-8 space-y-4">
-            {activeTab === 'login' ? (
+
+        <form onSubmit={handleSubmit} className="p-8 space-y-4">
+          {activeTab === "login" ? (
+            <>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Correo institucional</label>
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder="tu@institucion.edu"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Contraseña</label>
+                  <Input
+                    type="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Ingresar
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nombre Completo</label>
+                  <Input
+                    type="text"
+                    name="name"
+                    placeholder="Ej: Juan Pérez"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Correo institucional</label>
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder="admin@institucion.edu"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Contraseña</label>
+                  <Input
+                    type="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Confirmar contraseña</label>
+                  <Input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="w-full"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-2" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Crear cuenta
+              </Button>
+            </>
+          )}
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md text-sm">
+              <p>{error}</p>
+            </div>
+          )}
+
+          <p className="text-center text-sm text-slate-600 mt-4">
+            {activeTab === "login" ? (
               <>
-                <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Correo institucional</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="tu@institucion.edu" {...field} disabled={isSubmitting} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="password" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} disabled={isSubmitting} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Ingresar
-                </Button>
+                ¿No tienes cuenta?{" "}
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab("register"); setError(null); }}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  disabled={isLoading}
+                >
+                  Regístrate aquí
+                </button>
               </>
             ) : (
               <>
-                <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre Completo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ej: Juan Pérez" {...field} disabled={isSubmitting} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Correo institucional</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="admin@institucion.edu" {...field} disabled={isSubmitting} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="password" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} disabled={isSubmitting} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="confirmPassword" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirmar contraseña</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} disabled={isSubmitting} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-2" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Crear cuenta
-                </Button>
+                ¿Ya tienes cuenta?{" "}
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab("login"); setError(null); }}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  disabled={isLoading}
+                >
+                  Inicia sesión
+                </button>
               </>
             )}
-          </form>
-        </Form>
+          </p>
+        </form>
       </Card>
     </div>
   )
 }
-
