@@ -50,12 +50,12 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Auth Buttons */}
+          {/* Auth Buttons - CORREGIDOS */}
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/login">
+            <Link href="/auth">
               <Button variant="ghost">Iniciar sesión</Button>
             </Link>
-            <Link href="/register">
+            <Link href="/auth">
               <Button className="bg-blue-600 hover:bg-blue-700">Registrarse</Button>
             </Link>
           </div>
@@ -77,7 +77,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - CORREGIDO */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-slate-200">
             <div className="flex flex-col gap-4">
@@ -95,12 +95,12 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-slate-200">
-                <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start">
                     Iniciar sesión
                   </Button>
                 </Link>
-                <Link href="/register" onClick={() => setIsMenuOpen(false)}>
+                <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
                   <Button className="bg-blue-600 hover:bg-blue-700 w-full">
                     Registrarse
                   </Button>

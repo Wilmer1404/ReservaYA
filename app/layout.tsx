@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { Inter, Roboto_Mono } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from "@/components/ui/sonner" // Importamos el Toaster
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
-const robotoMono = Roboto_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'ReservaYa Platform',
@@ -21,6 +21,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${inter.className} font-sans antialiased`}>
         {children}
+        <Toaster richColors position="top-right" /> {/* Añadimos el componente Toaster */}
         <Analytics />
       </body>
     </html>

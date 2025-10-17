@@ -1,49 +1,46 @@
 "use client"
 
-import { DashboardPage } from "@/components/dashboard/dashboard-page"
-import { StatCard } from "@/components/dashboard/stat-card" // Componente reutilizable
-import { Button } from "@/components/ui/button"
-import { Calendar, Users, Grid3x3, TrendingUp, Plus } from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
+import { StatCard } from "@/components/dashboard/stat-card";
+import { Button } from "@/components/ui/button";
+import { Calendar, Users, Grid3x3, Plus, Loader2 } from "lucide-react";
+import Link from "next/link";
+import api from "@/lib/api";
+
+interface DashboardSummary {
+  activeSpaces: number;
+  totalUsers: number;
+  reservationsToday: number;
+}
 
 export default function DashboardPageContent() {
-  const stats = [
-    { label: "Espacios activos", value: "12", Icon: Grid3x3, color: "bg-blue-100 text-blue-600" },
-    { label: "Reservas hoy", value: "8", Icon: Calendar, color: "bg-green-100 text-green-600" },
-    { label: "Usuarios registrados", value: "245", Icon: Users, color: "bg-purple-100 text-purple-600" },
-    { label: "Tasa de ocupación", value: "78%", Icon: TrendingUp, color: "bg-orange-100 text-orange-600" },
-  ]
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const recentReservations = [
-    {
-      id: 1,
-      space: "Cancha de fútbol A",
-      user: "Juan García",
-      date: "Hoy, 14:00 - 15:30",
-      status: "confirmada",
-    },
-    {
-      id: 2,
-      space: "Sala de estudio 1",
-      user: "María López",
-      date: "Hoy, 15:00 - 17:00",
-      status: "confirmada",
-    },
-    {
-      id: 3,
-      space: "Laboratorio de química",
-      user: "Carlos Rodríguez",
-      date: "Mañana, 09:00 - 11:00",
-      status: "pendiente",
-    },
-    {
-      id: 4,
-      space: "Cancha de básquet",
-      user: "Ana Martínez",
-      date: "Mañana, 16:00 - 17:30",
-      status: "confirmada",
-    },
-  ]
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        setIsLoading(true);
+        const response = await api.get<DashboardSummary>('/dashboard/summary');
+        setSummary(response.data);
+        setError(null);
+      } catch (err) {
+        console.error("Error al cargar el resumen del dashboard:", err);
+        setError("No se pudo cargar el resumen.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSummary();
+  }, []);
+
+  const stats = summary ? [
+    { label: "Espacios activos", value: String(summary.activeSpaces), Icon: Grid3x3, color: "bg-blue-100 text-blue-600" },
+    { label: "Reservas hoy", value: String(summary.reservationsToday), Icon: Calendar, color: "bg-green-100 text-green-600" },
+    { label: "Usuarios registrados", value: String(summary.totalUsers), Icon: Users, color: "bg-purple-100 text-purple-600" },
+  ] : [];
 
   return (
     <DashboardPage
@@ -59,15 +56,21 @@ export default function DashboardPageContent() {
         </Link>
       }
     >
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
-        ))}
-      </div>
-
-      {/* Recent Reservations */}
-      {/* ... tu tabla de reservaciones recientes ... */}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-40">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        </div>
+      ) : error ? (
+        <div className="text-center text-red-600 bg-red-100 p-4 rounded-md">{error}</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {stats.map((stat) => (
+            <StatCard key={stat.label} {...stat} />
+          ))}
+        </div>
+      )}
+      
+      {/* Aquí podrías añadir una tabla con las reservas más recientes */}
     </DashboardPage>
-  )
+  );
 }
