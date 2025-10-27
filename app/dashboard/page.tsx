@@ -1,76 +1,210 @@
-"use client"
+// app/dashboard/spaces/page.tsx
+"use client";
 
-import { useState, useEffect } from "react";
-import { DashboardPage } from "@/components/dashboard/dashboard-page";
-import { StatCard } from "@/components/dashboard/stat-card";
+import { useState, useEffect } from "react"; // Importar hooks
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Grid3x3, Plus, Loader2 } from "lucide-react";
-import Link from "next/link";
-import api from "@/lib/api";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dumbbell,
+  Microscope,
+  Plus,
+  BookOpen,
+  Users2,
+  Loader2, // Icono de carga
+  AlertCircle, // Icono de error
+} from "lucide-react";
+import { SpaceModal } from "@/components/space-modal";
+import api from "@/lib/api"; // Importar nuestra instancia de API
+import { Skeleton } from "@/components/ui/skeleton"; // Importar Skeleton
 
-interface DashboardSummary {
-  activeSpaces: number;
-  totalUsers: number;
-  reservationsToday: number;
+// Definir la interfaz para los datos de un Espacio (debe coincidir con el backend)
+interface Space {
+  id: number;
+  name: string;
+  type: string; // 'sports', 'lab', 'study', 'meeting', 'other', etc.
+  capacity: number;
+  image: string | null; // El emoji o URL que guardamos
 }
 
-export default function DashboardPageContent() {
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+// Mapa de iconos (igual que antes)
+const iconMap: { [key: string]: React.ElementType } = {
+  sports: Dumbbell,
+  lab: Microscope,
+  study: BookOpen,
+  meeting: Users2,
+  // Añadir más tipos si es necesario
+};
+
+export default function SpacesPage() {
+  const [showSpaceModal, setShowSpaceModal] = useState(false);
+
+  // --- NUEVOS ESTADOS PARA MANEJAR DATOS REALES ---
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // --- FUNCIÓN PARA OBTENER LOS ESPACIOS ---
+  const fetchSpaces = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // El interceptor en api.ts añadirá el token automáticamente
+      const response = await api.get<Space[]>('/spaces');
+      setSpaces(response.data);
+      console.log("Espacios cargados:", response.data);
+    } catch (err) {
+      console.error("Error fetching spaces:", err);
+      setError("No se pudo cargar los espacios. Inténtalo de nuevo más tarde.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- USEEFFECT PARA OBTENER DATOS AL CARGAR LA PÁGINA ---
   useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-        setIsLoading(true);
-        const response = await api.get<DashboardSummary>('/dashboard/summary');
-        setSummary(response.data);
-        setError(null);
-      } catch (err) {
-        console.error("Error al cargar el resumen del dashboard:", err);
-        setError("No se pudo cargar el resumen.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchSummary();
-  }, []);
+    fetchSpaces();
+  }, []); // El array vacío asegura que se ejecute solo una vez al montar
 
-  const stats = summary ? [
-    { label: "Espacios activos", value: String(summary.activeSpaces), Icon: Grid3x3, color: "bg-blue-100 text-blue-600" },
-    { label: "Reservas hoy", value: String(summary.reservationsToday), Icon: Calendar, color: "bg-green-100 text-green-600" },
-    { label: "Usuarios registrados", value: String(summary.totalUsers), Icon: Users, color: "bg-purple-100 text-purple-600" },
-  ] : [];
-
-  return (
-    <DashboardPage
-      activeTab="dashboard"
-      title="Panel principal"
-      description="Bienvenido a tu panel de control"
-      button={
-        <Link href="/dashboard/spaces">
-          <Button className="bg-blue-600 hover:bg-blue-700 mt-4 md:mt-0">
-            <Plus className="w-4 h-4 mr-2" />
-            Agregar espacio
-          </Button>
-        </Link>
-      }
-    >
-      {isLoading ? (
-        <div className="flex justify-center items-center h-40">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        </div>
-      ) : error ? (
-        <div className="text-center text-red-600 bg-red-100 p-4 rounded-md">{error}</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {stats.map((stat) => (
-            <StatCard key={stat.label} {...stat} />
+  // --- FUNCIÓN PARA RENDERIZAR EL CONTENIDO (CARGA, ERROR, VACÍO, DATOS) ---
+  const renderContent = () => {
+    // 1. Estado de Carga
+    if (isLoading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((n) => (
+            <Card key={n} className="flex flex-col justify-between">
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-1/3" />
+              </CardContent>
+              <CardFooter className="flex justify-end gap-2">
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-8 w-16" />
+              </CardFooter>
+            </Card>
           ))}
         </div>
-      )}
-      
-      {/* Aquí podrías añadir una tabla con las reservas más recientes */}
-    </DashboardPage>
+      );
+    }
+
+    // 2. Estado de Error
+    if (error) {
+      return (
+        <div className="flex flex-col items-center justify-center text-red-600 bg-red-50 p-6 rounded-lg border border-red-200 h-64">
+          <AlertCircle className="w-12 h-12 mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Error al cargar</h3>
+          <p className="text-center mb-4">{error}</p>
+          <Button onClick={fetchSpaces} variant="destructive">
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Reintentar
+          </Button>
+        </div>
+      );
+    }
+
+    // 3. Estado Vacío (Sin espacios)
+    if (spaces.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center text-center p-6 rounded-lg border-2 border-dashed border-slate-300 h-64">
+          <BookOpen className="w-12 h-12 text-slate-400 mb-4" />
+          <h3 className="text-xl font-semibold text-slate-700 mb-2">
+            Aún no has creado ningún espacio
+          </h3>
+          <p className="text-slate-500 mb-4">
+            Comienza creando tu primer espacio para que pueda ser reservado.
+          </p>
+          <Button onClick={() => setShowSpaceModal(true)} className="mt-4">
+            <Plus className="w-4 h-4 mr-2" />
+            Crear tu primer espacio
+          </Button>
+        </div>
+      );
+    }
+
+    // 4. Estado con Datos
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {spaces.map((space) => {
+          const Icon = iconMap[space.type] || BookOpen;
+          return (
+            <Card key={space.id} className="flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Icon className="w-5 h-5 text-blue-600" />
+                  {space.name}
+                </CardTitle>
+                <CardDescription>Tipo: {space.type}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="flex items-center gap-2 text-slate-700">
+                  <Users2 className="w-4 h-4 text-slate-500" />
+                  Capacidad: {space.capacity} personas
+                </p>
+                {/* Mostramos el emoji si existe */}
+                {space.image && (
+                  <p className="mt-4 text-4xl" title="Emoji/Imagen del espacio">
+                    {space.image}
+                  </p>
+                )}
+              </CardContent>
+              <CardFooter className="flex justify-end gap-2">
+                {/* Botones deshabilitados por ahora, listos para futura implementación */}
+                <Button variant="outline" size="sm" disabled>
+                  Editar
+                </Button>
+                <Button variant="destructive" size="sm" disabled>
+                  Eliminar
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <div className="p-6 md:p-10">
+      {/* Cabecera de la página */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">
+            Gestión de Espacios
+          </h1>
+          <p className="text-slate-600">
+            Crea, edita y administra tus espacios disponibles.
+          </p>
+        </div>
+        <Button onClick={() => setShowSpaceModal(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Crear Espacio
+        </Button>
+      </div>
+
+      {/* Contenido dinámico (Carga, Error, Vacío o Datos) */}
+      {renderContent()}
+
+      {/* Modal para crear espacio */}
+      <SpaceModal
+        isOpen={showSpaceModal}
+        onClose={() => setShowSpaceModal(false)}
+        // --- PROP NUEVA: Función que se ejecuta cuando se crea un espacio ---
+        onSpaceCreated={() => {
+          console.log("SpaceModal reportó creación, actualizando lista...");
+          fetchSpaces(); // Vuelve a cargar la lista de espacios
+          setShowSpaceModal(false); // Cierra el modal
+        }}
+      />
+    </div>
   );
 }

@@ -1,171 +1,196 @@
-"use client"
+// components/space-modal.tsx
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { X } from "lucide-react"
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+import api from "@/lib/api";
 
 interface SpaceModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (space: SpaceFormData) => void
-  initialData?: SpaceFormData
-  isEditing?: boolean
+  isOpen: boolean;
+  onClose: () => void;
+  onSpaceCreated: () => void; // Prop para notificar creación
 }
 
+// Interfaz para el formulario
+// --- CORRECCIÓN AQUÍ: Añadido 'export' ---
 export interface SpaceFormData {
-  id?: number
-  name: string
-  type: string
-  capacity: number
-  image: string
+  name: string;
+  type: string;
+  capacity: number;
+  image: string; // Emoji o URL
 }
 
-const spaceTypes = [
-  { value: "sports", label: "Deporte" },
-  { value: "study", label: "Estudio" },
-  { value: "lab", label: "Laboratorio" },
-  { value: "meeting", label: "Reunión" },
-  { value: "library", label: "Biblioteca" },
-]
-
-const spaceEmojis = ["⚽", "📚", "🧪", "🏀", "🎤", "📖", "🎨", "🏋️", "🎭", "🖥️"]
-
-export function SpaceModal({ isOpen, onClose, onSave, initialData, isEditing }: SpaceModalProps) {
-  const [formData, setFormData] = useState<SpaceFormData>(
-    initialData || {
-      name: "",
-      type: "sports",
-      capacity: 20,
-      image: "⚽",
-    },
-  )
+export function SpaceModal({ isOpen, onClose, onSpaceCreated }: SpaceModalProps) {
+  const [formData, setFormData] = useState<SpaceFormData>({
+    name: "",
+    type: "study", // Valor por defecto
+    capacity: 10, // Valor por defecto
+    image: "📚", // Valor por defecto
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "capacity" ? Number.parseInt(value) : value,
-    }))
-  }
+      [name]: name === 'capacity' ? parseInt(value, 10) || 0 : value,
+    }));
+    setError(null);
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave(formData)
-    setFormData({
-      name: "",
-      type: "sports",
-      capacity: 20,
-      image: "⚽",
-    })
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
-  if (!isOpen) return null
+    if (!formData.name || !formData.type || formData.capacity <= 0) {
+      setError("Por favor, completa todos los campos correctamente.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.post('/spaces', formData);
+      console.log("Space created successfully:", response.data);
+      
+      onSpaceCreated(); // Llamar a la función del padre
+
+      // Limpiar formulario
+      setFormData({
+        name: "",
+        type: "study",
+        capacity: 10,
+        image: "📚",
+      });
+      // onSpaceCreated se encarga de cerrar el modal
+    } catch (err: any) {
+      console.error("Error creating space:", err);
+      setError(err.response?.data?.message || "No se pudo crear el espacio. Inténtalo de nuevo.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!isLoading) {
+      setError(null);
+      onClose();
+    }
+  };
 
   return (
-    <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Crear nuevo espacio</DialogTitle>
+            <DialogDescription>
+              Completa los detalles de tu nuevo espacio.
+            </DialogDescription>
+          </DialogHeader>
 
-      {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md border border-slate-200 bg-white">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200">
-            <h2 className="text-xl font-bold text-slate-900">{isEditing ? "Editar espacio" : "Crear nuevo espacio"}</h2>
-            <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
-              <X className="w-5 h-5 text-slate-600" />
-            </button>
-          </div>
+          {error && (
+            <div className="my-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+              {error}
+            </div>
+          )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Nombre del espacio</label>
-              <input
-                type="text"
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nombre
+              </Label>
+              <Input
+                id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Ej: Cancha de fútbol A"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                className="col-span-3"
+                placeholder="Ej: Laboratorio de Química"
+                disabled={isLoading}
               />
             </div>
-
-            {/* Type */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de espacio</label>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="type" className="text-right">
+                Tipo
+              </Label>
               <select
+                id="type"
                 name="type"
                 value={formData.type}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="col-span-3 w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                disabled={isLoading}
               >
-                {spaceTypes.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
+                <option value="study">Sala de Estudio</option>
+                <option value="lab">Laboratorio</option>
+                <option value="sports">Cancha Deportiva</option>
+                <option value="meeting">Sala de Reuniones</option>
+                <option value="other">Otro</option>
               </select>
             </div>
-
-            {/* Capacity */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Capacidad (personas)</label>
-              <input
-                type="number"
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="capacity" className="text-right">
+                Capacidad
+              </Label>
+              <Input
+                id="capacity"
                 name="capacity"
+                type="number"
                 value={formData.capacity}
                 onChange={handleChange}
+                className="col-span-3"
                 min="1"
-                max="500"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                disabled={isLoading}
               />
             </div>
-
-            {/* Emoji Selection */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Icono del espacio</label>
-              <div className="grid grid-cols-5 gap-2">
-                {spaceEmojis.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, image: emoji }))}
-                    className={`p-3 text-2xl rounded-lg border-2 transition-colors ${
-                      formData.image === emoji
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="image" className="text-right">
+                Emoji/Img
+              </Label>
+              <Input
+                id="image"
+                name="image"
+                value={formData.image}
+                onChange={handleChange}
+                className="col-span-3"
+                placeholder="Ej: 🔬"
+                disabled={isLoading}
+              />
             </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="flex-1 border-slate-300 bg-transparent"
-              >
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" disabled={isLoading}>
                 Cancelar
               </Button>
-              <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
-                {isEditing ? "Actualizar" : "Crear"}
-              </Button>
-            </div>
-          </form>
-        </Card>
-      </div>
-    </>
-  )
+            </DialogClose>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                'Crear Espacio'
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }
