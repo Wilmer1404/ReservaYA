@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"; // Importar useRouter para la redirección
-import { useAuthStore } from "@/store/auth-store"; // Importar el store de autenticación
+import { useAuth } from "@/context/AuthContext"; // Importar el contexto de autenticación
 import {
   Calendar,
   Settings,
@@ -24,12 +24,11 @@ interface SidebarProps {
 export function Sidebar({ activeTab = "dashboard" }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter();
-  const { clearToken } = useAuthStore(); // Obtener la función para limpiar el token del store
+  const { logout } = useAuth(); // Obtener la función logout del contexto de autenticación
 
   // Función para manejar el cierre de sesión
   const handleLogout = () => {
-    clearToken(); // Limpia el token del store y de localStorage
-    router.push('/auth'); // Redirige al usuario a la página de autenticación
+    logout(); // Limpia el estado de autenticación y redirige
   };
 
   const menuItems = [

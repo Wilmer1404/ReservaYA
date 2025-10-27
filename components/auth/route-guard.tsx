@@ -2,26 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
+import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 export function RouteGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const token = useAuthStore((state) => state.token);
+    const { isAuthenticated, isLoading } = useAuth();
     const [isVerified, setIsVerified] = useState(false);
 
     useEffect(() => {
-        // Se ejecuta solo en el lado del cliente
-        if (typeof window !== 'undefined') {
-            if (!token) {
-                router.push('/auth');
+        // Esperar a que termine de cargar la verificación inicial de auth
+        if (!isLoading) {
+            if (!isAuthenticated) {
+                router.push('/login');
             } else {
                 setIsVerified(true);
             }
         }
-    }, [token, router]);
+    }, [isAuthenticated, isLoading, router]);
 
-    if (!isVerified) {
+    if (isLoading || !isVerified) {
         return (
             <div className="flex h-screen items-center justify-center bg-slate-50">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-600" />

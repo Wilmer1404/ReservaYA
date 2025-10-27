@@ -1,8 +1,19 @@
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import Link from "next/link"
-import { Calendar, Users, Zap, ArrowRight, BookOpen, Dumbbell, Microscope, Users2 } from "lucide-react"
-import Navbar from "@/components/navbar"
+// app/page.tsx
+import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import {
+  Calendar,
+  Users,
+  Zap,
+  ArrowRight,
+  BookOpen,
+  Dumbbell,
+  Microscope,
+  Users2,
+  Check,
+} from "lucide-react";
+import Navbar from "@/components/navbar";
 
 export default function Home() {
   return (
@@ -18,8 +29,7 @@ export default function Home() {
                 Organiza, gestiona y reserva tus espacios fácilmente
               </h1>
               <p className="text-xl text-slate-600 text-balance">
-                ReservaYA es la plataforma ideal para que instituciones gestionen sus recursos y ofrezcan reservas de
-                forma simple y visual.
+                ReservaYA es la plataforma ideal para que instituciones gestionen sus recursos y ofrezcan reservas de forma simple y visual.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -42,22 +52,17 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-green-100 rounded-2xl opacity-60"></div>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="grid grid-cols-2 gap-4 p-8">
-                <div className="bg-white rounded-lg p-4 shadow-lg flex flex-col items-center gap-2">
-                  <Dumbbell className="w-8 h-8 text-blue-600" />
-                  <span className="text-sm font-medium text-slate-700">Canchas</span>
-                </div>
-                <div className="bg-white rounded-lg p-4 shadow-lg flex flex-col items-center gap-2">
-                  <Microscope className="w-8 h-8 text-green-600" />
-                  <span className="text-sm font-medium text-slate-700">Laboratorios</span>
-                </div>
-                <div className="bg-white rounded-lg p-4 shadow-lg flex flex-col items-center gap-2">
-                  <BookOpen className="w-8 h-8 text-blue-600" />
-                  <span className="text-sm font-medium text-slate-700">Salas</span>
-                </div>
-                <div className="bg-white rounded-lg p-4 shadow-lg flex flex-col items-center gap-2">
-                  <Users2 className="w-8 h-8 text-green-600" />
-                  <span className="text-sm font-medium text-slate-700">Recursos</span>
-                </div>
+                {[
+                  { icon: Dumbbell, color: "text-blue-600", label: "Canchas" },
+                  { icon: Microscope, color: "text-green-600", label: "Laboratorios" },
+                  { icon: BookOpen, color: "text-blue-600", label: "Salas" },
+                  { icon: Users2, color: "text-green-600", label: "Recursos" },
+                ].map((item, i) => (
+                  <div key={i} className="bg-white rounded-lg p-4 shadow-lg flex flex-col items-center gap-2">
+                    <item.icon className={`w-8 h-8 ${item.color}`} />
+                    <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -68,12 +73,13 @@ export default function Home() {
       <section id="features" className="bg-white py-20 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Características principales</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+              Características principales
+            </h2>
             <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               Todo lo que necesitas para gestionar tus espacios de forma eficiente
             </p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
@@ -102,61 +108,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Help Section */}
-      <section id="help" className="py-20 md:py-32 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">¿Necesitas ayuda?</h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Estamos aquí para apoyarte en cada paso del proceso
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <BookOpen className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Centro de ayuda</h3>
-              <p className="text-slate-600 mb-6">
-                Encuentra respuestas a las preguntas más frecuentes y guías detalladas
-              </p>
-              <Button variant="outline" className="w-full">
-                Ver documentación
-              </Button>
-            </Card>
-
-            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Users className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Soporte directo</h3>
-              <p className="text-slate-600 mb-6">
-                Nuestro equipo está disponible para ayudarte con cualquier consulta
-              </p>
-              <Link href="/contact">
-                <Button variant="outline" className="w-full">
-                  Contactar soporte
-                </Button>
-              </Link>
-            </Card>
-
-            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Zap className="w-8 h-8 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Configuración rápida</h3>
-              <p className="text-slate-600 mb-6">
-                Te ayudamos a configurar tu cuenta y espacios en minutos
-              </p>
-              <Button variant="outline" className="w-full">
-                Comenzar setup
-              </Button>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-blue-600 to-green-600 py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -172,6 +123,50 @@ export default function Home() {
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="w-full py-16 md:py-24 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-12">
+            Un plan simple para todos
+          </h2>
+          <div className="flex justify-center">
+            <Card className="w-full max-w-md p-8 border-2 border-blue-600 shadow-2xl rounded-lg">
+              <CardHeader className="p-0 mb-6">
+                <CardTitle className="text-2xl font-bold text-slate-900 mb-2">
+                  Plan Institucional
+                </CardTitle>
+                <CardDescription className="text-slate-600">
+                  Perfecto para empezar a organizar.
+                </CardDescription>
+              </CardHeader>
+              <p className="text-5xl font-bold text-slate-900 mb-6">
+                Gratis <span className="text-lg font-normal text-slate-600">/ beta</span>
+              </p>
+              <ul className="space-y-3 text-left mb-8">
+                {[
+                  "Gestión de espacios ilimitados",
+                  "Gestión de usuarios",
+                  "Sistema de reservas en línea",
+                  "Soporte básico",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <Check className="w-5 h-5 text-green-500" />
+                    <span className="text-slate-700">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                asChild
+                size="lg"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6"
+              >
+                <Link href="/register">Regístrate gratis</Link>
+              </Button>
+            </Card>
+          </div>
         </div>
       </section>
 
@@ -191,69 +186,33 @@ export default function Home() {
             <div>
               <h4 className="font-bold text-white mb-4">Producto</h4>
               <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Características
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Precios
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Seguridad
-                  </a>
-                </li>
+                <li><a href="#features" className="hover:text-white transition">Características</a></li>
+                <li><a href="#" className="hover:text-white transition">Precios</a></li>
+                <li><a href="#" className="hover:text-white transition">Seguridad</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold text-white mb-4">Empresa</h4>
               <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Acerca de
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-white transition">
-                    Contacto
-                  </Link>
-                </li>
+                <li><a href="#" className="hover:text-white transition">Acerca de</a></li>
+                <li><a href="#" className="hover:text-white transition">Blog</a></li>
+                <li><Link href="/contact" className="hover:text-white transition">Contacto</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold text-white mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Privacidad
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Términos
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Cookies
-                  </a>
-                </li>
+                <li><a href="#" className="hover:text-white transition">Privacidad</a></li>
+                <li><a href="#" className="hover:text-white transition">Términos</a></li>
+                <li><a href="#" className="hover:text-white transition">Cookies</a></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-slate-800 pt-8 text-center text-sm">
-            <p>&copy; 2025 ReservaYA. Todos los derechos reservados.</p>
+            <p>&copy; {new Date().getFullYear()} ReservaYA. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }

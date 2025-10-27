@@ -50,12 +50,12 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Auth Buttons - CORREGIDOS */}
+          {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/auth">
+            <Link href="/login">
               <Button variant="ghost">Iniciar sesión</Button>
             </Link>
-            <Link href="/auth">
+            <Link href="/register">
               <Button className="bg-blue-600 hover:bg-blue-700">Registrarse</Button>
             </Link>
           </div>
@@ -95,12 +95,12 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-slate-200">
-                <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
+                <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start">
                     Iniciar sesión
                   </Button>
                 </Link>
-                <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
+                <Link href="/register" onClick={() => setIsMenuOpen(false)}>
                   <Button className="bg-blue-600 hover:bg-blue-700 w-full">
                     Registrarse
                   </Button>

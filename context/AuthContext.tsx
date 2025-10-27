@@ -3,6 +3,7 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation'; // Para redireccionar
+import { useAuthStore } from '@/store/auth-store'; // Para sincronizar con el store
 
 // Definimos la estructura de la información del usuario que guardaremos
 interface UserAuthInfo {
@@ -50,6 +51,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
+        
+        // Sincronizar con el auth-store
+        useAuthStore.getState().setToken(storedToken);
+        
         console.log("AuthProvider: Sesión restaurada desde localStorage.");
       } else {
         console.log("AuthProvider: No hay sesión guardada.");
@@ -77,13 +82,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.setItem('authUser', JSON.stringify(userData));
         setToken(loginData.token);
         setUser(userData);
+        
+        // Sincronizar con el auth-store
+        useAuthStore.getState().setToken(loginData.token);
+        
         console.log("AuthProvider: Usuario logueado y sesión guardada.", userData);
 
         // Redirección basada en rol
-        if (userData.userRole === 'ADMIN') {
+        if (userData.userRole === 'ADMIN' || userData.userRole === 'USER') {
             router.push('/dashboard');
-        } else if (userData.userRole === 'USER') {
-            router.push('/portal'); // Redirigir a la futura sección de usuarios
         } else {
              router.push('/'); // Fallback a la home si el rol no es reconocido
         }
@@ -101,6 +108,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.removeItem('authUser');
         setToken(null);
         setUser(null);
+        
+        // Sincronizar con el auth-store
+        useAuthStore.getState().clearAllAuthStorage();
+        
         console.log("AuthProvider: Usuario deslogueado y sesión eliminada.");
         router.push('/login'); // Redirigir a la página de login
     } catch (error) {
