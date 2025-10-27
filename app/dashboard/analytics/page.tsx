@@ -1,240 +1,237 @@
-"use client"
-
-// Forzar renderizado dinámico
+// app/dashboard/analytics/page.tsx
+"use client";
 export const dynamic = 'force-dynamic';
 
-import { Sidebar } from "@/components/sidebar"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Download, TrendingUp } from "lucide-react"
+import { useState, useEffect } from 'react';
+import { Bar, Line } from 'react-chartjs-2';
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-} from "recharts"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from "@/components/ui/chart"
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  TimeScale, // Necesario para ejes de tiempo
+} from 'chart.js';
+import 'chartjs-adapter-date-fns'; // Adaptador para date-fns
+import { es } from 'date-fns/locale'; // Locale español
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import api from '@/lib/api';
+import { Sidebar } from "@/components/sidebar";
+import { subDays, startOfDay, endOfDay, eachDayOfInterval, format, parseISO } from 'date-fns'; // Funciones de date-fns
+
+// Registrar componentes necesarios de Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  TimeScale, // Registrar escala de tiempo
+  Title,
+  Tooltip,
+  Legend
+);
+
+// Interfaz simplificada para las Reservas (solo necesitamos startTime y space.type)
+interface AnalyticsReservation {
+  id: number;
+  startTime: string; // ISO String
+  space: { type: string };
+  status: string;
+}
+
+// Interfaz para los datos procesados para los gráficos
+interface ChartData {
+  reservationsLast7Days: { labels: string[]; data: number[] };
+  reservationsByType: { labels: string[]; data: number[] };
+}
 
 export default function AnalyticsPage() {
-  // Reservations trend data
-  const reservationsTrendData = [
-    { date: "Lun", reservations: 45, confirmadas: 38, pendientes: 7 },
-    { date: "Mar", reservations: 52, confirmadas: 44, pendientes: 8 },
-    { date: "Mié", reservations: 48, confirmadas: 41, pendientes: 7 },
-    { date: "Jue", reservations: 61, confirmadas: 52, pendientes: 9 },
-    { date: "Vie", reservations: 55, confirmadas: 47, pendientes: 8 },
-    { date: "Sáb", reservations: 67, confirmadas: 58, pendientes: 9 },
-    { date: "Dom", reservations: 42, confirmadas: 36, pendientes: 6 },
-  ]
+  const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Space usage data
-  const spaceUsageData = [
-    { name: "Cancha de fútbol A", usage: 85 },
-    { name: "Sala de estudio 1", usage: 72 },
-    { name: "Laboratorio de química", usage: 68 },
-    { name: "Cancha de básquet", usage: 78 },
-    { name: "Sala de conferencias", usage: 55 },
-    { name: "Biblioteca", usage: 92 },
-  ]
+  // --- FUNCIÓN PARA OBTENER Y PROCESAR DATOS ---
+  const fetchDataAndProcess = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // 1. Obtener todas las reservas (activas)
+      const response = await api.get<AnalyticsReservation[]>('/reservations');
+      const reservations = response.data.filter(r => r.status !== 'CANCELLED'); // Filtrar canceladas
 
-  // Space type distribution
-  const spaceTypeData = [
-    { name: "Deporte", value: 35, color: "#3b82f6" },
-    { name: "Estudio", value: 28, color: "#10b981" },
-    { name: "Laboratorio", value: 18, color: "#f59e0b" },
-    { name: "Reunión", value: 12, color: "#8b5cf6" },
-    { name: "Biblioteca", value: 7, color: "#ef4444" },
-  ]
+      // 2. Procesar datos para "Reservas Últimos 7 Días"
+      const today = endOfDay(new Date()); // Fin del día de hoy
+      const sevenDaysAgo = startOfDay(subDays(today, 6)); // Inicio de hace 7 días (incluyendo hoy)
+      const dateInterval = eachDayOfInterval({ start: sevenDaysAgo, end: today }); // Array de fechas en el intervalo
 
-  // Occupancy trend
-  const occupancyTrendData = [
-    { time: "08:00", occupancy: 25 },
-    { time: "10:00", occupancy: 45 },
-    { time: "12:00", occupancy: 72 },
-    { time: "14:00", occupancy: 88 },
-    { time: "16:00", occupancy: 65 },
-    { time: "18:00", occupancy: 42 },
-    { time: "20:00", occupancy: 18 },
-  ]
+      const reservationsCountByDay: { [key: string]: number } = {};
+      dateInterval.forEach(day => {
+        reservationsCountByDay[format(day, 'yyyy-MM-dd')] = 0; // Inicializar contador para cada día
+      });
 
-  // User activity
-  const userActivityData = [
-    { week: "Sem 1", usuarios: 120, reservas: 245 },
-    { week: "Sem 2", usuarios: 135, reservas: 278 },
-    { week: "Sem 3", usuarios: 148, reservas: 312 },
-    { week: "Sem 4", usuarios: 162, reservas: 356 },
-  ]
+      reservations.forEach(res => {
+        try {
+            const resDate = startOfDay(parseISO(res.startTime)); // Obtener solo la fecha (inicio del día)
+            const formattedDate = format(resDate, 'yyyy-MM-dd');
+            // Incrementar contador si la fecha está en nuestro intervalo de 7 días
+            if (reservationsCountByDay.hasOwnProperty(formattedDate)) {
+                 reservationsCountByDay[formattedDate]++;
+            }
+        } catch (e) {
+            console.warn("Error parsing reservation date:", res.startTime, e);
+        }
+      });
 
-  const chartConfig = {
-    reservations: {
-      label: "Reservas",
-      color: "#3b82f6",
-    },
-    confirmadas: {
-      label: "Confirmadas",
-      color: "#10b981",
-    },
-    pendientes: {
-      label: "Pendientes",
-      color: "#f59e0b",
-    },
-    usuarios: {
-      label: "Usuarios",
-      color: "#3b82f6",
-    },
-    reservas: {
-      label: "Reservas",
-      color: "#8b5cf6",
-    },
+      const reservationsLast7Days = {
+        labels: dateInterval.map(day => format(day, 'dd MMM', { locale: es })), // Formato '27 Oct'
+        data: dateInterval.map(day => reservationsCountByDay[format(day, 'yyyy-MM-dd')])
+      };
+
+      // 3. Procesar datos para "Reservas por Tipo de Espacio"
+      const reservationsCountByType: { [key: string]: number } = {};
+      reservations.forEach(res => {
+        const type = res.space?.type || 'Desconocido';
+        reservationsCountByType[type] = (reservationsCountByType[type] || 0) + 1;
+      });
+
+      const reservationsByType = {
+        labels: Object.keys(reservationsCountByType),
+        data: Object.values(reservationsCountByType)
+      };
+
+      setChartData({ reservationsLast7Days, reservationsByType });
+      console.log("Datos procesados para gráficos:", { reservationsLast7Days, reservationsByType });
+
+    } catch (err) {
+      console.error("Error fetching or processing analytics data:", err);
+      setError("No se pudieron cargar los datos de analíticas.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- USEEFFECT PARA CARGAR DATOS ---
+  useEffect(() => {
+    fetchDataAndProcess();
+  }, []);
+
+  // --- OPCIONES PARA LOS GRÁFICOS --- (Puedes personalizarlas)
+  const lineChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, title: { display: true, text: 'Número de Reservas' } },
+    scales: { x: { title: { display: true, text: 'Fecha' } }, y: { beginAtZero: true, title: { display: true, text: 'Cantidad' } } }
+  };
+  const barChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y' as const, // Barras horizontales para mejor lectura de etiquetas
+    plugins: { legend: { display: false }, title: { display: true, text: 'Número de Reservas' } },
+    scales: { x: { beginAtZero: true, title: { display: true, text: 'Cantidad' } }, y: { title: { display: true, text: 'Tipo de Espacio' } } }
+  };
+
+
+  // --- RENDERIZADO CONDICIONAL ---
+  if (error) {
+    return (
+      <div className="p-6 md:p-10 flex flex-col items-center justify-center text-red-600 bg-red-50 h-[300px] rounded-lg border border-red-200">
+         <AlertCircle className="w-12 h-12 mb-4" />
+         <h3 className="text-xl font-semibold mb-2">Error al Cargar Analíticas</h3>
+         <p className="text-center mb-4">{error}</p>
+         <Button onClick={fetchDataAndProcess} variant="destructive">
+           <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Reintentar
+         </Button>
+      </div>
+    );
   }
-
-  const stats = [
-    { label: "Total de reservas", value: "1,247", change: "+12.5%", color: "bg-blue-100 text-blue-600" },
-    { label: "Tasa de ocupación", value: "68%", change: "+5.2%", color: "bg-green-100 text-green-600" },
-    { label: "Usuarios activos", value: "562", change: "+8.3%", color: "bg-purple-100 text-purple-600" },
-    { label: "Espacios disponibles", value: "12", change: "-2.1%", color: "bg-orange-100 text-orange-600" },
-  ]
 
   return (
     <div className="flex h-screen bg-slate-50">
       <Sidebar activeTab="analytics" />
-
+      
       <main className="flex-1 overflow-auto md:ml-0">
-        <div className="p-4 md:p-8">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">Análisis y Estadísticas</h1>
-              <p className="text-slate-600 mt-2">Visualiza el rendimiento de tus espacios y reservas</p>
-            </div>
-            <Button className="bg-blue-600 hover:bg-blue-700 mt-4 md:mt-0">
-              <Download className="w-4 h-4 mr-2" />
-              Descargar reporte
-            </Button>
-          </div>
+        <div className="p-6 md:p-10">
+          <h1 className="text-3xl font-bold text-slate-900 mb-8">Analíticas</h1>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {stats.map((stat, idx) => (
-              <Card key={idx} className="p-4 border border-slate-200">
-                <p className="text-slate-600 text-sm font-medium">{stat.label}</p>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-                  <div className={`p-2 rounded-lg ${stat.color}`}>
-                    <TrendingUp className="w-5 h-5" />
-                  </div>
-                </div>
-                <p className="text-xs text-green-600 mt-2">{stat.change} vs semana anterior</p>
-              </Card>
-            ))}
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Gráfico: Reservas Últimos 7 Días */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Reservas en los Últimos 7 Días</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px] md:h-[400px]">
+            {isLoading ? (
+              <Skeleton className="w-full h-full" />
+            ) : chartData ? (
+              <Line
+                options={lineChartOptions}
+                data={{
+                  labels: chartData.reservationsLast7Days.labels,
+                  datasets: [{
+                    label: 'Reservas',
+                    data: chartData.reservationsLast7Days.data,
+                    borderColor: 'rgb(59, 130, 246)', // Azul
+                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                    tension: 0.1 // Curva suave
+                  }],
+                }}
+              />
+            ) : (
+               <p className="text-center text-slate-500">No hay datos disponibles.</p>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Charts Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Reservations Trend */}
-            <Card className="p-6 border border-slate-200">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Tendencia de reservas</h3>
-              <ChartContainer config={chartConfig} className="h-80">
-                <LineChart data={reservationsTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent payload={undefined} />} />
-                  <Line type="monotone" dataKey="confirmadas" stroke="var(--color-confirmadas)" strokeWidth={2} />
-                  <Line type="monotone" dataKey="pendientes" stroke="var(--color-pendientes)" strokeWidth={2} />
-                </LineChart>
-              </ChartContainer>
-            </Card>
-
-            {/* Space Usage */}
-            <Card className="p-6 border border-slate-200">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Uso de espacios</h3>
-              <ChartContainer config={chartConfig} className="h-80">
-                <BarChart data={spaceUsageData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="usage" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ChartContainer>
-            </Card>
-
-            {/* Occupancy Trend */}
-            <Card className="p-6 border border-slate-200">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Ocupación por hora</h3>
-              <ChartContainer config={chartConfig} className="h-80">
-                <AreaChart data={occupancyTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area type="monotone" dataKey="occupancy" fill="#10b981" stroke="#10b981" />
-                </AreaChart>
-              </ChartContainer>
-            </Card>
-
-            {/* Space Type Distribution */}
-            <Card className="p-6 border border-slate-200">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Distribución por tipo</h3>
-              <ChartContainer config={chartConfig} className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={spaceTypeData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {spaceTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </Card>
-          </div>
-
-          {/* User Activity */}
-          <Card className="p-6 border border-slate-200">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Actividad de usuarios</h3>
-            <ChartContainer config={chartConfig} className="h-80">
-              <BarChart data={userActivityData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ChartLegend content={<ChartLegendContent payload={undefined} />} />
-                <Bar yAxisId="left" dataKey="usuarios" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-                <Bar yAxisId="right" dataKey="reservas" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ChartContainer>
-          </Card>
+        {/* Gráfico: Reservas por Tipo de Espacio */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Reservas por Tipo de Espacio (Total)</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px] md:h-[400px]">
+             {isLoading ? (
+              <Skeleton className="w-full h-full" />
+            ) : chartData ? (
+              <Bar
+                options={barChartOptions}
+                data={{
+                  labels: chartData.reservationsByType.labels,
+                  datasets: [{
+                    label: 'Número de Reservas',
+                    data: chartData.reservationsByType.data,
+                    backgroundColor: [ // Puedes definir más colores
+                      'rgba(59, 130, 246, 0.7)',
+                      'rgba(16, 185, 129, 0.7)',
+                      'rgba(234, 179, 8, 0.7)',
+                      'rgba(139, 92, 246, 0.7)',
+                      'rgba(244, 63, 94, 0.7)',
+                    ],
+                    borderColor: [
+                      'rgb(59, 130, 246)',
+                      'rgb(16, 185, 129)',
+                      'rgb(234, 179, 8)',
+                      'rgb(139, 92, 246)',
+                      'rgb(244, 63, 94)',
+                    ],
+                    borderWidth: 1,
+                  }],
+                }}
+              />
+             ) : (
+               <p className="text-center text-slate-500">No hay datos disponibles.</p>
+             )}
+          </CardContent>
+        </Card>
+      </div>
         </div>
       </main>
     </div>
-  )
+  );
 }

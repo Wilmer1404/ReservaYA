@@ -1,6 +1,5 @@
 "use client"
 
-// Forzar renderizado dinámico
 export const dynamic = 'force-dynamic';
 
 import type React from "react"

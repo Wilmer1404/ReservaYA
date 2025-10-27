@@ -10,6 +10,7 @@ import { BookOpen, CalendarCheck, Users, Loader2, AlertCircle } from "lucide-rea
 import api from "@/lib/api"; // Importar API
 import { Skeleton } from "@/components/ui/skeleton"; // Importar Skeleton
 import { Button } from "@/components/ui/button"; // Para botón Reintentar
+import { Sidebar } from "@/components/sidebar";
 
 // Interfaz para el DTO DashboardSummary del backend
 interface DashboardSummary {
@@ -51,22 +52,31 @@ export default function DashboardPage() {
   // Mostrar error si existe
   if (error) {
     return (
-      <div className="p-6 md:p-10 flex flex-col items-center justify-center text-red-600 bg-red-50 h-[300px] rounded-lg border border-red-200">
-        <AlertCircle className="w-12 h-12 mb-4" />
-        <h3 className="text-xl font-semibold mb-2">Error al cargar el resumen</h3>
-        <p className="text-center mb-4">{error}</p>
-        <Button onClick={fetchSummary} variant="destructive">
-          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          Reintentar
-        </Button>
+      <div className="flex h-screen bg-slate-50">
+        <Sidebar activeTab="dashboard" />
+        <main className="flex-1 overflow-auto md:ml-0">
+          <div className="p-6 md:p-10 flex flex-col items-center justify-center text-red-600 bg-red-50 h-[300px] rounded-lg border border-red-200">
+            <AlertCircle className="w-12 h-12 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Error al cargar el resumen</h3>
+            <p className="text-center mb-4">{error}</p>
+            <Button onClick={fetchSummary} variant="destructive">
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Reintentar
+            </Button>
+          </div>
+        </main>
       </div>
     );
   }
 
   // Renderizar tarjetas (con Skeletons si está cargando)
   return (
-    <div className="p-6 md:p-10">
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">Resumen General</h1>
+    <div className="flex h-screen bg-slate-50">
+      <Sidebar activeTab="dashboard" />
+      
+      <main className="flex-1 overflow-auto md:ml-0">
+        <div className="p-6 md:p-10">
+          <h1 className="text-3xl font-bold text-slate-900 mb-8">Resumen General</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Tarjeta Espacios Activos */}
@@ -94,13 +104,15 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Aquí podrías añadir más secciones, como un gráfico o una tabla de próximas reservas */}
-      {/*
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold text-slate-900 mb-4">Próximas Reservas</h2>
-        {isLoading ? <Skeleton className="h-64 w-full" /> : <p>Aquí iría la tabla o lista de reservas...</p>}
-      </div>
-      */}
+          {/* Aquí podrías añadir más secciones, como un gráfico o una tabla de próximas reservas */}
+          {/*
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">Próximas Reservas</h2>
+            {isLoading ? <Skeleton className="h-64 w-full" /> : <p>Aquí iría la tabla o lista de reservas...</p>}
+          </div>
+          */}
+        </div>
+      </main>
     </div>
   );
 }

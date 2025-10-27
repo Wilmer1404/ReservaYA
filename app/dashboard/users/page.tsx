@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Loader2, AlertCircle, Users as UsersIcon } from "lucide-react";
 import api from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Sidebar } from "@/components/sidebar";
 // Importar AlertDialog para confirmación de borrado
 import {
   AlertDialog,
@@ -201,11 +202,15 @@ export default function UsersPage() {
   };
 
   return (
-    // Envolver en AlertDialog permite que AlertDialogTrigger funcione en cualquier parte dentro
-    <AlertDialog>
-      <div className="p-6 md:p-10">
-        {/* Cabecera */}
-        <div className="flex justify-between items-center mb-8">
+    <div className="flex h-screen bg-slate-50">
+      <Sidebar activeTab="users" />
+      
+      <main className="flex-1 overflow-auto md:ml-0">
+        {/* Envolver en AlertDialog permite que AlertDialogTrigger funcione en cualquier parte dentro */}
+        <AlertDialog>
+          <div className="p-6 md:p-10">
+            {/* Cabecera */}
+            <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Gestión de Usuarios</h1>
             <p className="text-slate-600">
@@ -288,8 +293,9 @@ export default function UsersPage() {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-
-      </div>
-    </AlertDialog>
+          </div>
+        </AlertDialog>
+      </main>
+    </div>
   );
 }

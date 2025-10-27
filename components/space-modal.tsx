@@ -1,7 +1,7 @@
 // components/space-modal.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Importar useEffect
 import {
   Dialog,
   DialogContent,
@@ -17,30 +17,59 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import api from "@/lib/api";
 
+// Interfaz para datos del espacio (puede ser útil tenerla global o importarla)
+interface Space {
+  id: number;
+  name: string;
+  type: string;
+  capacity: number;
+  image: string | null;
+}
+
+// Interfaz para las props del modal
 interface SpaceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSpaceCreated: () => void; // Prop para notificar creación
+  initialData: Space | null; // Datos para editar, null si es creación
+  onSaveSuccess: () => void; // Cambiado nombre para ser más genérico
 }
 
-// Interfaz para el formulario
-// --- CORRECCIÓN AQUÍ: Añadido 'export' ---
+// Interfaz para el estado del formulario
 export interface SpaceFormData {
   name: string;
   type: string;
   capacity: number;
-  image: string; // Emoji o URL
+  image: string; // Permitimos string vacío
 }
 
-export function SpaceModal({ isOpen, onClose, onSpaceCreated }: SpaceModalProps) {
+export function SpaceModal({ isOpen, onClose, initialData, onSaveSuccess }: SpaceModalProps) {
   const [formData, setFormData] = useState<SpaceFormData>({
     name: "",
-    type: "study", // Valor por defecto
-    capacity: 10, // Valor por defecto
-    image: "📚", // Valor por defecto
+    type: "study",
+    capacity: 10,
+    image: "", // Iniciar vacío o con un emoji por defecto
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isEditing = !!initialData; // Determina si estamos editando
+
+  // Efecto para llenar el form si estamos editando
+  useEffect(() => {
+    if (isEditing && initialData) {
+      setFormData({
+        name: initialData.name,
+        type: initialData.type,
+        capacity: initialData.capacity,
+        image: initialData.image || "", // Usar string vacío si es null
+      });
+      setError(null); // Limpiar errores
+    } else {
+      // Resetear para creación
+      setFormData({ name: "", type: "study", capacity: 10, image: "📚" });
+      setError(null);
+    }
+  }, [isOpen, isEditing, initialData]); // Dependencias
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -57,28 +86,31 @@ export function SpaceModal({ isOpen, onClose, onSpaceCreated }: SpaceModalProps)
     setError(null);
 
     if (!formData.name || !formData.type || formData.capacity <= 0) {
-      setError("Por favor, completa todos los campos correctamente.");
+      setError("Por favor, completa nombre, tipo y capacidad correctamente.");
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await api.post('/spaces', formData);
-      console.log("Space created successfully:", response.data);
-      
-      onSpaceCreated(); // Llamar a la función del padre
+      let response;
+      const payload = { ...formData, image: formData.image || null }; // Enviar null si image está vacío
 
-      // Limpiar formulario
-      setFormData({
-        name: "",
-        type: "study",
-        capacity: 10,
-        image: "📚",
-      });
-      // onSpaceCreated se encarga de cerrar el modal
+      if (isEditing && initialData) {
+        // --- LLAMADA PUT PARA ACTUALIZAR ---
+        console.log("Actualizando espacio:", initialData.id, payload);
+        response = await api.put(`/spaces/${initialData.id}`, payload);
+      } else {
+        // --- LLAMADA POST PARA CREAR ---
+        console.log("Creando espacio:", payload);
+        response = await api.post('/spaces', payload);
+      }
+
+      console.log(isEditing ? "Space updated:" : "Space created:", response.data);
+      onSaveSuccess(); // Notificar al padre (recarga y cierra)
+
     } catch (err: any) {
-      console.error("Error creating space:", err);
-      setError(err.response?.data?.message || "No se pudo crear el espacio. Inténtalo de nuevo.");
+      console.error("Error saving space:", err);
+      setError(err.response?.data?.message || `No se pudo ${isEditing ? 'actualizar' : 'crear'} el espacio.`);
     } finally {
       setIsLoading(false);
     }
@@ -96,10 +128,15 @@ export function SpaceModal({ isOpen, onClose, onSpaceCreated }: SpaceModalProps)
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Crear nuevo espacio</DialogTitle>
+            <DialogTitle>{isEditing ? "Editar Espacio" : "Crear Nuevo Espacio"}</DialogTitle>
             <DialogDescription>
-              Completa los detalles de tu nuevo espacio.
+              {isEditing
+                ? `Modifica los detalles del espacio "${initialData?.name}".`
+                : "Completa los detalles de tu nuevo espacio."}
             </DialogDescription>
+            {isEditing && initialData && (
+              <div className="text-sm text-slate-500 pt-2">ID: {initialData.id}</div>
+            )}
           </DialogHeader>
 
           {error && (
@@ -109,32 +146,14 @@ export function SpaceModal({ isOpen, onClose, onSpaceCreated }: SpaceModalProps)
           )}
 
           <div className="grid gap-4 py-4">
+            {/* Campos del formulario (iguales para crear y editar) */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nombre
-              </Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="col-span-3"
-                placeholder="Ej: Laboratorio de Química"
-                disabled={isLoading}
-              />
+              <Label htmlFor="name" className="text-right">Nombre</Label>
+              <Input id="name" name="name" value={formData.name} onChange={handleChange} className="col-span-3" required disabled={isLoading} />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
-                Tipo
-              </Label>
-              <select
-                id="type"
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="col-span-3 w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                disabled={isLoading}
-              >
+              <Label htmlFor="type" className="text-right">Tipo</Label>
+              <select id="type" name="type" value={formData.type} onChange={handleChange} className="col-span-3 w-full px-3 py-2 border border-slate-300 rounded-md text-sm ..." disabled={isLoading}>
                 <option value="study">Sala de Estudio</option>
                 <option value="lab">Laboratorio</option>
                 <option value="sports">Cancha Deportiva</option>
@@ -143,50 +162,18 @@ export function SpaceModal({ isOpen, onClose, onSpaceCreated }: SpaceModalProps)
               </select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="capacity" className="text-right">
-                Capacidad
-              </Label>
-              <Input
-                id="capacity"
-                name="capacity"
-                type="number"
-                value={formData.capacity}
-                onChange={handleChange}
-                className="col-span-3"
-                min="1"
-                disabled={isLoading}
-              />
+              <Label htmlFor="capacity" className="text-right">Capacidad</Label>
+              <Input id="capacity" name="capacity" type="number" value={formData.capacity} onChange={handleChange} className="col-span-3" min="1" required disabled={isLoading} />
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="image" className="text-right">
-                Emoji/Img
-              </Label>
-              <Input
-                id="image"
-                name="image"
-                value={formData.image}
-                onChange={handleChange}
-                className="col-span-3"
-                placeholder="Ej: 🔬"
-                disabled={isLoading}
-              />
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="image" className="text-right">Emoji/Img</Label>
+              <Input id="image" name="image" value={formData.image} onChange={handleChange} className="col-span-3" placeholder="Ej: 🔬 (Opcional)" disabled={isLoading} />
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline" disabled={isLoading}>
-                Cancelar
-              </Button>
-            </DialogClose>
+            <DialogClose asChild><Button type="button" variant="outline" disabled={isLoading}>Cancelar</Button></DialogClose>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creando...
-                </>
-              ) : (
-                'Crear Espacio'
-              )}
+              {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</> : (isEditing ? 'Guardar Cambios' : 'Crear Espacio')}
             </Button>
           </DialogFooter>
         </form>
