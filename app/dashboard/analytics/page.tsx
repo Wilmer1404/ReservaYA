@@ -1,5 +1,8 @@
 "use client"
 
+// Forzar renderizado dinámico
+export const dynamic = 'force-dynamic';
+
 import { Sidebar } from "@/components/sidebar"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"

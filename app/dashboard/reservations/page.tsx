@@ -1,5 +1,8 @@
 "use client"
 
+// Forzar renderizado dinámico
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from "react";
 import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { Card } from "@/components/ui/card";
