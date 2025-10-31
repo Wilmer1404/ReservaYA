@@ -13,6 +13,7 @@ interface AuthResponse {
 
 // Definimos el estado del store
 interface AuthState {
+  clearAllAuthStorage(): unknown;
   token: string | null;
   userRole: 'ADMIN' | 'USER' | null;
   userName: string | null;
