@@ -4,13 +4,14 @@ import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/auth-card/auth-card.component';
 import { CommonModule } from '@angular/common';
+import { toast } from 'ngx-sonner';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, AuthCardComponent, CommonModule],
   templateUrl: './login.html',
-  styleUrls: ['./login.css']
+  styleUrls: ['./login.css'],
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
@@ -21,7 +22,7 @@ export class LoginComponent {
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]]
+    password: ['', [Validators.required]],
   });
 
   onSubmit() {
@@ -32,15 +33,14 @@ export class LoginComponent {
 
     this.authService.login({ email: email!, password: password! }).subscribe({
       next: (response) => {
-        console.log(`Bienvenido, ${response.userName}!`);
+        toast.success(`Bienvenido de nuevo, ${response.userName}`);
         this.isLoading.set(false);
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        console.error(err);
-        alert(err.error?.message || 'Error al iniciar sesión');
+        toast.error(err.error?.message || 'Error de credenciales'); 
         this.isLoading.set(false);
-      }
+      },
     });
   }
 }

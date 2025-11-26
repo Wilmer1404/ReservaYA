@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NgxSonnerToaster } from 'ngx-sonner';
+import { NgxSonnerToaster } from 'ngx-sonner'; 
 
 @Component({
   selector: 'app-root',
@@ -8,6 +8,7 @@ import { NgxSonnerToaster } from 'ngx-sonner';
   imports: [RouterOutlet, NgxSonnerToaster],
   template: `
     <router-outlet></router-outlet>
-    <ngx-sonner-toaster /> `,
+    <ngx-sonner-toaster position="top-center" />
+  `,
 })
 export class AppComponent {}
