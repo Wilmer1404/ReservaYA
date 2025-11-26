@@ -10,18 +10,19 @@ import { AuthResponse, LoginRequest, RegisterRequest } from '../models/auth.mode
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  
-  // URL a tu Backend Spring Boot
   private apiUrl = 'http://localhost:8080/api/v1/auth';
 
-  // Estado Reactivo (Signal)
+  // --- SIGNALS (Estado Reactivo) ---
   private currentUserSignal = signal<AuthResponse | null>(this.getUserFromStorage());
 
-  // Selectores públicos
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isAuthenticated = computed(() => !!this.currentUserSignal());
+  readonly userRole = computed(() => this.currentUserSignal()?.userRole);
+
+  constructor() {}
 
   login(credentials: LoginRequest) {
+    // Esto hará POST a http://localhost:8080/auth/login
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
         this.saveToStorage(response);
@@ -32,6 +33,7 @@ export class AuthService {
   }
 
   register(data: RegisterRequest) {
+    // Esto hará POST a http://localhost:8080/auth/register
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data);
   }
 
@@ -51,6 +53,7 @@ export class AuthService {
   }
 
   private redirectBasedOnRole(role: string) {
+    // Ajuste según los roles de tu Enum Role.java (ADMIN, STUDENT, etc.)
     if (role === 'ADMIN') {
       this.router.navigate(['/dashboard']);
     } else {
