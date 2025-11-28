@@ -1,0 +1,126 @@
+<app-auth-card
+  title="Registra tu institución"
+  description="Comienza a gestionar tus espacios hoy"
+>
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+
+    <div class="space-y-2">
+      <label for="institutionName" class="text-sm font-medium leading-none">Nombre de la institución</label>
+      <input
+        id="institutionName"
+        type="text"
+        formControlName="institutionName"
+        class="flex h-9 w-full rounded-md border border-slate-300 bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+        placeholder="Ej: Universidad Nacional"
+      />
+      @if (registerForm.get('institutionName')?.invalid && registerForm.get('institutionName')?.touched) {
+        <p class="text-red-500 text-xs">El nombre es requerido.</p>
+      }
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="space-y-2">
+        <label for="institutionType" class="text-sm font-medium leading-none">Tipo</label>
+        <select
+          id="institutionType"
+          formControlName="institutionType"
+          class="flex h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+        >
+          <option value="university">Universidad</option>
+          <option value="school">Colegio</option>
+          <option value="sports">Centro deportivo</option>
+          <option value="library">Biblioteca</option>
+          <option value="institute">Instituto</option>
+          <option value="other">Otro</option>
+        </select>
+      </div>
+
+      <div class="space-y-2">
+        <label for="institutionEmailDomain" class="text-sm font-medium leading-none">Dominio (Opcional)</label>
+        <input
+          id="institutionEmailDomain"
+          type="text"
+          formControlName="institutionEmailDomain"
+          class="flex h-9 w-full rounded-md border border-slate-300 bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+          placeholder="Ej: uni.edu.pe"
+        />
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <label for="adminName" class="text-sm font-medium leading-none">Nombre del Administrador</label>
+      <input
+        id="adminName"
+        type="text"
+        formControlName="adminName"
+        class="flex h-9 w-full rounded-md border border-slate-300 bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+        placeholder="Nombre completo"
+      />
+    </div>
+
+    <div class="space-y-2">
+      <label for="adminEmail" class="text-sm font-medium leading-none">Correo del Administrador</label>
+      <input
+        id="adminEmail"
+        type="email"
+        formControlName="adminEmail"
+        class="flex h-9 w-full rounded-md border border-slate-300 bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+        placeholder="admin@institucion.com"
+      />
+      @if (registerForm.get('adminEmail')?.hasError('email') && registerForm.get('adminEmail')?.touched) {
+        <p class="text-red-500 text-xs">Ingresa un correo válido.</p>
+      }
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="space-y-2">
+        <label for="adminPassword" class="text-sm font-medium leading-none">Contraseña</label>
+        <input
+          id="adminPassword"
+          type="password"
+          formControlName="adminPassword"
+          class="flex h-9 w-full rounded-md border border-slate-300 bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+          placeholder="••••••••"
+        />
+        @if (registerForm.get('adminPassword')?.hasError('minlength') && registerForm.get('adminPassword')?.touched) {
+          <p class="text-red-500 text-xs">Mínimo 6 caracteres.</p>
+        }
+      </div>
+      <div class="space-y-2">
+        <label for="confirmPassword" class="text-sm font-medium leading-none">Confirmar</label>
+        <input
+          id="confirmPassword"
+          type="password"
+          formControlName="confirmPassword"
+          class="flex h-9 w-full rounded-md border border-slate-300 bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+          placeholder="••••••••"
+        />
+      </div>
+    </div>
+
+    @if (registerForm.hasError('mismatch') && (registerForm.get('confirmPassword')?.touched || registerForm.get('adminPassword')?.touched)) {
+      <div class="p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs flex items-center gap-2">
+        <lucide-icon name="alert-circle" class="w-4 h-4"></lucide-icon>
+        Las contraseñas no coinciden.
+      </div>
+    }
+
+    <button
+      type="submit"
+      [disabled]="registerForm.invalid || isLoading()"
+      class="w-full inline-flex items-center justify-center rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 h-9 px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+    >
+      @if (isLoading()) {
+        <lucide-icon name="loader-2" class="w-4 h-4 mr-2 animate-spin"></lucide-icon>
+        Registrando...
+      } @else {
+        Crear cuenta institucional
+      }
+    </button>
+  </form>
+
+  <div class="mt-6 text-center text-sm text-slate-600">
+    ¿Ya tienes cuenta?
+    <a routerLink="/login" class="text-blue-600 hover:underline font-medium cursor-pointer">Inicia sesión</a>
+  </div>
+</app-auth-card>
