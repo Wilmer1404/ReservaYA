@@ -1,3 +1,4 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
@@ -22,9 +23,6 @@ export const routes: Routes = [
         path: '',
         loadComponent: () => import('./features/dashboard/home/dashboard-home.component').then(m => m.DashboardHomeComponent)
       },
-      // --- Aquí irán las rutas de Alvaro y Leonardo ---
-      // Por ahora, si haces clic darán error en consola hasta que creemos los archivos.
-      // Ejemplo de cómo quedará cuando Alvaro termine Spaces:
       {
         path: 'horarios',
         loadComponent: () => import('./features/dashboard/horarios/horarios.component').then(m => m.HorariosComponent)
@@ -33,10 +31,7 @@ export const routes: Routes = [
         path: 'reservations',
         loadComponent: () => import('./features/dashboard/reservations/reservations.component').then(m => m.ReservationsComponent)
       },
-      // --- Aquí irán las rutas de Alvaro y Leonardo ---
-      // Por ahora, si haces clic darán error en consola hasta que creemos los archivos.
-      // Ejemplo de cómo quedará cuando Alvaro termine Spaces:
-      /*
+      // --- Rutas descomentadas y activadas ---
       {
         path: 'spaces',
         loadComponent: () => import('./features/dashboard/spaces/spaces.component').then(m => m.SpacesComponent)
@@ -45,12 +40,7 @@ export const routes: Routes = [
         path: 'users',
         loadComponent: () => import('./features/dashboard/users/users.component').then(m => m.UsersComponent)
       },
-      /*
-      {
-        path: 'horarios',
-        loadComponent: () => import('./features/dashboard/schedule/schedule.component').then(m => m.ScheduleComponent)
-      },
-      */
+      // Puedes añadir más rutas aquí, como 'settings' si creas ese componente en el futuro
     ]
   }
 ];

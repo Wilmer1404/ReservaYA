@@ -8,15 +8,16 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
   standalone: true,
   imports: [CommonModule, RouterOutlet, SidebarComponent],
   template: `
-    <div class="min-h-screen bg-slate-50">
+    <div class="min-h-screen bg-slate-50 flex">
+      <!-- Sidebar fijo -->
       <app-sidebar />
-      <main class="pl-64 transition-all">
+
+      <!-- Área de contenido principal -->
+      <!-- ml-64 empuja el contenido para que no quede debajo del sidebar -->
+      <main class="flex-1 ml-64 transition-all min-h-screen">
         <div class="container mx-auto p-8">
+          <!-- Aquí se renderizan tus componentes (Spaces, Users, etc.) -->
           <router-outlet></router-outlet>
-          <div>
-            <h1 class="text-3xl font-bold text-slate-900 mb-4">Bienvenido al Panel de Control</h1>
-            <p class="text-slate-600">Selecciona una opción del menú lateral para comenzar a gestionar Reservas, Espacios y Usuarios.</p>
-          </div>
         </div>
       </main>
     </div>
