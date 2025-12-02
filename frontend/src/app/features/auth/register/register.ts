@@ -5,6 +5,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/auth-card/auth-card.component';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
+import { toast } from 'ngx-sonner'; // Importar toast
 
 @Component({
   selector: 'app-register',
@@ -40,6 +41,10 @@ export class RegisterComponent {
   onSubmit() {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      // Toast de advertencia
+      toast.warning('Formulario incompleto', {
+        description: 'Por favor, revisa los campos marcados en rojo.',
+      });
       return;
     }
 
@@ -57,13 +62,17 @@ export class RegisterComponent {
 
     this.authService.register(payload).subscribe({
       next: () => {
-        console.log('¡Registro Exitoso! Institución creada.');
-        alert('¡Registro Exitoso! Institución creada.');
+        toast.success('¡Registro Exitoso!', {
+          description: 'La institución ha sido creada. Ahora puedes iniciar sesión.',
+          duration: 5000,
+        });
         this.router.navigate(['/login']);
       },
       error: (err) => {
         console.error(err);
-        alert(err.error?.message || 'No se pudo registrar la institución.');
+        toast.error('Error en el registro', {
+          description: err.error?.message || 'No se pudo crear la cuenta. Inténtalo de nuevo.',
+        });
         this.isLoading.set(false);
       }
     });

@@ -4,14 +4,14 @@ import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/auth-card/auth-card.component';
 import { CommonModule } from '@angular/common';
-import { toast } from 'ngx-sonner';
+import { LucideAngularModule } from 'lucide-angular';
+import { toast } from 'ngx-sonner'; // Importar toast
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, AuthCardComponent, CommonModule],
+  imports: [ReactiveFormsModule, RouterLink, AuthCardComponent, CommonModule, LucideAngularModule],
   templateUrl: './login.html',
-  styleUrls: ['./login.css'],
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
@@ -33,12 +33,20 @@ export class LoginComponent {
 
     this.authService.login({ email: email!, password: password! }).subscribe({
       next: (response) => {
-        toast.success(`Bienvenido de nuevo, ${response.userName}`);
+        // Notificación rica
+        toast.success(`¡Bienvenido de nuevo, ${response.userName}!`, {
+          description: 'Has iniciado sesión correctamente.',
+          duration: 3000,
+        });
+
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']);
+        // La redirección ya la maneja el servicio, pero por seguridad:
+        // this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        toast.error(err.error?.message || 'Error de credenciales'); 
+        toast.error('Error de acceso', {
+          description: err.error?.message || 'Credenciales incorrectas. Verifica tu correo y contraseña.',
+        });
         this.isLoading.set(false);
       },
     });

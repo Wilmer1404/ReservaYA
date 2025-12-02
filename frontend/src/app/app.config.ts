@@ -1,61 +1,72 @@
-import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
-import {
-  LucideAngularModule,
-  // Iconos Generales
-  Calendar,
-  ArrowLeft,
-  Loader2,
-  AlertCircle,
-  LayoutDashboard,
-  LogOut,
-  Settings,
-  Plus,         // Nuevo: Para botones "Crear"
-  Edit,         // Nuevo: Para editar
-  Trash2,       // Nuevo: Para eliminar
+  import { ApplicationConfig, importProvidersFrom } from '@angular/core';
+  import { provideRouter } from '@angular/router';
+  import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
+  import {
+    LucideAngularModule,
+    // Iconos Generales
+    Calendar,
+    ArrowLeft,
+    Loader2,
+    AlertCircle,
+    LayoutDashboard,
+    LogOut,
+    Settings,
+    Plus,
+    Edit,
+    Trash2,
 
-  // Iconos del Sidebar
-  MapPin,
-  Users,
-  BarChart3,
-  CalendarCheck,
-  CalendarClock,
+    // Iconos para Formularios (NUEVOS)
+    Mail,         // Para input email
+    Lock,         // Para input password
+    User,         // Para input nombre
+    Building2,    // Para input institución
+    CheckCircle2, // Para éxito
 
-  // Iconos de Espacios (Spaces)
-  Dumbbell,     // Deportes
-  Microscope,   // Laboratorio
-  BookOpen      // Estudio/Biblioteca
-} from 'lucide-angular';
+    // Iconos del Sidebar
+    MapPin,
+    Users,
+    BarChart3,
+    CalendarCheck,
+    CalendarClock,
 
-import { routes } from './app.routes';
-import { authInterceptor } from './core/interceptors/auth.interceptor';
+    // Iconos de Espacios
+    Dumbbell,
+    Microscope,
+    BookOpen
+  } from 'lucide-angular';
 
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+  import { routes } from './app.routes';
+  import { authInterceptor } from './core/interceptors/auth.interceptor';
 
-    // Registramos TODOS los íconos aquí para que estén disponibles en la app
-    importProvidersFrom(LucideAngularModule.pick({
-      Calendar,
-      ArrowLeft,
-      Loader2,
-      AlertCircle,
-      LayoutDashboard,
-      LogOut,
-      Settings,
-      Plus,
-      Edit,
-      Trash2,
-      MapPin,
-      Users,
-      BarChart3,
-      CalendarCheck,
-      CalendarClock,
-      Dumbbell,
-      Microscope,
-      BookOpen
-    }))
-  ]
-};
+  export const appConfig: ApplicationConfig = {
+    providers: [
+      provideRouter(routes),
+      provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+
+      importProvidersFrom(LucideAngularModule.pick({
+        Calendar,
+        ArrowLeft,
+        Loader2,
+        AlertCircle,
+        LayoutDashboard,
+        LogOut,
+        Settings,
+        Plus,
+        Edit,
+        Trash2,
+        Mail,
+        Lock,
+        User,
+        Building2,
+        CheckCircle2,
+        MapPin,
+        Users,
+        BarChart3,
+        CalendarCheck,
+        CalendarClock,
+        Dumbbell,
+        Microscope,
+        BookOpen
+      }))
+    ]
+  };
