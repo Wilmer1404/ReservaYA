@@ -12,4 +12,22 @@ export class DashboardService {
   getSummary() {
     return this.http.get<DashboardSummaryDTO>(`${this.apiUrl}/summary`);
   }
+
+  // Returns events compatible with FullCalendar
+  getEvents() {
+    return this.http.get<any[]>(`${this.apiUrl}/events`);
+  }
+
+  // Reservations list for management table
+  getReservations() {
+    return this.http.get<any[]>(`${this.apiUrl}/reservations`);
+  }
+
+  approveReservation(id: string | number) {
+    return this.http.post(`${this.apiUrl}/reservations/${id}/approve`, {});
+  }
+
+  rejectReservation(id: string | number) {
+    return this.http.post(`${this.apiUrl}/reservations/${id}/reject`, {});
+  }
 }

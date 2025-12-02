@@ -26,6 +26,18 @@ export const routes: Routes = [
       // Por ahora, si haces clic darán error en consola hasta que creemos los archivos.
       // Ejemplo de cómo quedará cuando Alvaro termine Spaces:
       {
+        path: 'horarios',
+        loadComponent: () => import('./features/dashboard/horarios/horarios.component').then(m => m.HorariosComponent)
+      },
+      {
+        path: 'reservations',
+        loadComponent: () => import('./features/dashboard/reservations/reservations.component').then(m => m.ReservationsComponent)
+      },
+      // --- Aquí irán las rutas de Alvaro y Leonardo ---
+      // Por ahora, si haces clic darán error en consola hasta que creemos los archivos.
+      // Ejemplo de cómo quedará cuando Alvaro termine Spaces:
+      /*
+      {
         path: 'spaces',
         loadComponent: () => import('./features/dashboard/spaces/spaces.component').then(m => m.SpacesComponent)
       },
