@@ -1,0 +1,18 @@
+<div *ngIf="loading">Cargando reservas...</div>
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<div *ngIf="!loading && reservas.length === 0">No tienes reservas.</div>
+
+<table *ngIf="reservas.length>0">
+  <thead>
+    <tr><th>Espacio</th><th>Fecha</th><th>Hora</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let r of reservas">
+      <td>{{ r.space?.name || r.spaceName }}</td>
+      <td>{{ r.date | date: 'mediumDate' }}</td>
+      <td>{{ r.startTime || r.time }}</td>
+      <td>{{ r.status }}</td>
+    </tr>
+  </tbody>
+</table>

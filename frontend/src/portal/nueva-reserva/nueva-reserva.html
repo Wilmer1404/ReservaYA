@@ -1,0 +1,38 @@
+<div>
+  <h2>Nueva Reserva</h2>
+
+  <div *ngIf="step===1">
+    <h3>Paso 1: Selecciona espacio</h3>
+    <div *ngIf="loadingSpaces">Cargando espacios...</div>
+    <ul>
+      <li *ngFor="let s of spaces">
+        <label>
+          <input type="radio" [value]="s.id" formControlName="spaceId" (change)="form.patchValue({spaceId: s.id})" />
+          {{ s.name }} - {{ s.location }}
+        </label>
+      </li>
+    </ul>
+    <button (click)="next()">Siguiente</button>
+  </div>
+
+  <div *ngIf="step===2">
+    <h3>Paso 2: Selecciona fecha y hora</h3>
+    <input type="date" formControlName="date" />
+    <input type="time" formControlName="startTime" />
+    <input type="time" formControlName="endTime" />
+    <button (click)="prev()">Atrás</button>
+    <button (click)="next()">Siguiente</button>
+  </div>
+
+  <div *ngIf="step===3">
+    <h3>Paso 3: Confirmar</h3>
+    <p>Espacio: {{ spaces.find(x=>x.id==form.value.spaceId)?.name }}</p>
+    <p>Fecha: {{ form.value.date }}</p>
+    <p>Hora: {{ form.value.startTime }} - {{ form.value.endTime }}</p>
+    <button (click)="prev()">Atrás</button>
+    <button (click)="submit()" [disabled]="creating">Crear reserva</button>
+  </div>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="success" class="success">{{ success }}</div>
+</div>
