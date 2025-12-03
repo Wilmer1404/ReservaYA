@@ -1,4 +1,13 @@
-import { Component, EventEmitter, Input, Output, inject, OnChanges, ChangeDetectorRef, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  inject,
+  OnChanges,
+  ChangeDetectorRef,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SpacesService } from '../../../core/services/spaces.service';
@@ -11,20 +20,28 @@ import { toast } from 'ngx-sonner';
   imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   template: `
     <!-- Overlay con backdrop-blur para enfoque -->
-    <div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-all animate-in">
-
+    <div
+      *ngIf="isOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-all animate-in"
+    >
       <!-- Modal Card -->
-      <div class="w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]">
-
+      <div
+        class="w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]"
+      >
         <!-- Header -->
-        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+        <div
+          class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80"
+        >
           <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
             <div class="p-2 bg-blue-100 rounded-lg text-blue-600">
               <lucide-icon name="map-pin" class="w-5 h-5"></lucide-icon>
             </div>
             {{ isEditing ? 'Editar Espacio' : 'Nuevo Espacio' }}
           </h3>
-          <button (click)="closeModal()" class="p-1 rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors">
+          <button
+            (click)="closeModal()"
+            class="p-1 rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
+          >
             <lucide-icon name="x" class="w-5 h-5"></lucide-icon>
           </button>
         </div>
@@ -32,13 +49,19 @@ import { toast } from 'ngx-sonner';
         <!-- Scrollable Content -->
         <div class="overflow-y-auto p-6">
           <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
-
             <!-- Nombre -->
             <div class="space-y-1.5">
               <label class="text-sm font-semibold text-slate-700">Nombre del Espacio</label>
               <div class="relative flex items-center">
-                <lucide-icon name="type" class="absolute left-3 w-4 h-4 text-slate-400 z-10"></lucide-icon>
-                <input formControlName="name" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all" placeholder="Ej: Laboratorio de Química 1" />
+                <lucide-icon
+                  name="type"
+                  class="absolute left-3 w-4 h-4 text-slate-400 z-10"
+                ></lucide-icon>
+                <input
+                  formControlName="name"
+                  class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                  placeholder="Ej: Laboratorio de Química 1"
+                />
               </div>
             </div>
 
@@ -47,8 +70,14 @@ import { toast } from 'ngx-sonner';
               <div class="space-y-1.5">
                 <label class="text-sm font-semibold text-slate-700">Tipo</label>
                 <div class="relative flex items-center">
-                  <lucide-icon name="book-open" class="absolute left-3 w-4 h-4 text-slate-400 z-10"></lucide-icon>
-                  <select formControlName="type" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 appearance-none cursor-pointer">
+                  <lucide-icon
+                    name="book-open"
+                    class="absolute left-3 w-4 h-4 text-slate-400 z-10"
+                  ></lucide-icon>
+                  <select
+                    formControlName="type"
+                    class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 appearance-none cursor-pointer"
+                  >
                     <option value="study">Sala de Estudio</option>
                     <option value="lab">Laboratorio</option>
                     <option value="sports">Cancha Deportiva</option>
@@ -56,7 +85,19 @@ import { toast } from 'ngx-sonner';
                     <option value="other">Otro</option>
                   </select>
                   <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <svg
+                      class="w-4 h-4 text-slate-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -65,8 +106,16 @@ import { toast } from 'ngx-sonner';
               <div class="space-y-1.5">
                 <label class="text-sm font-semibold text-slate-700">Capacidad</label>
                 <div class="relative flex items-center">
-                  <lucide-icon name="users" class="absolute left-3 w-4 h-4 text-slate-400 z-10"></lucide-icon>
-                  <input type="number" formControlName="capacity" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" placeholder="20" />
+                  <lucide-icon
+                    name="users"
+                    class="absolute left-3 w-4 h-4 text-slate-400 z-10"
+                  ></lucide-icon>
+                  <input
+                    type="number"
+                    formControlName="capacity"
+                    class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    placeholder="20"
+                  />
                 </div>
               </div>
             </div>
@@ -78,42 +127,71 @@ import { toast } from 'ngx-sonner';
               </h4>
               <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-1">
-                  <label class="text-xs font-medium text-slate-500 uppercase tracking-wide">Apertura</label>
-                  <input type="time" formControlName="openTime" class="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none" />
+                  <label class="text-xs font-medium text-slate-500 uppercase tracking-wide"
+                    >Apertura</label
+                  >
+                  <!-- CORRECCIÓN 1: formControlName="openingTime" -->
+                  <input
+                    type="time"
+                    formControlName="openingTime"
+                    class="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  />
                 </div>
                 <div class="space-y-1">
-                  <label class="text-xs font-medium text-slate-500 uppercase tracking-wide">Cierre</label>
-                  <input type="time" formControlName="closeTime" class="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none" />
+                  <label class="text-xs font-medium text-slate-500 uppercase tracking-wide"
+                    >Cierre</label
+                  >
+                  <!-- CORRECCIÓN 2: formControlName="closingTime" -->
+                  <input
+                    type="time"
+                    formControlName="closingTime"
+                    class="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  />
                 </div>
               </div>
             </div>
 
             <!-- Imagen -->
             <div class="space-y-1.5">
-              <label class="text-sm font-semibold text-slate-700">Emoji o URL Imagen <span class="text-slate-400 font-normal">(Opcional)</span></label>
+              <label class="text-sm font-semibold text-slate-700"
+                >Emoji o URL Imagen
+                <span class="text-slate-400 font-normal">(Opcional)</span></label
+              >
               <div class="relative flex items-center">
-                <lucide-icon name="image" class="absolute left-3 w-4 h-4 text-slate-400 z-10"></lucide-icon>
-                <input formControlName="image" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" placeholder="Ej: 🏀 o https://..." />
+                <lucide-icon
+                  name="image"
+                  class="absolute left-3 w-4 h-4 text-slate-400 z-10"
+                ></lucide-icon>
+                <input
+                  formControlName="image"
+                  class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  placeholder="Ej: 🏀 o https://..."
+                />
               </div>
             </div>
 
             <!-- Footer Actions -->
             <div class="flex justify-end gap-3 pt-2 mt-4">
-              <button type="button" (click)="closeModal()" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors">
+              <button
+                type="button"
+                (click)="closeModal()"
+                class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors"
+              >
                 Cancelar
               </button>
-              <button type="submit"
+              <button
+                type="submit"
                 [disabled]="form.invalid || loading"
-                class="relative inline-flex items-center justify-center px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow">
-
+                class="relative inline-flex items-center justify-center px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow"
+              >
                 <span *ngIf="!loading" class="flex items-center gap-2">
-                   <lucide-icon name="check-circle-2" class="w-4 h-4"></lucide-icon>
-                   {{ isEditing ? 'Guardar Cambios' : 'Crear Espacio' }}
+                  <lucide-icon name="check-circle-2" class="w-4 h-4"></lucide-icon>
+                  {{ isEditing ? 'Guardar Cambios' : 'Crear Espacio' }}
                 </span>
 
                 <span *ngIf="loading" class="flex items-center gap-2">
-                   <lucide-icon name="loader-2" class="w-4 h-4 animate-spin"></lucide-icon>
-                   Procesando...
+                  <lucide-icon name="loader-2" class="w-4 h-4 animate-spin"></lucide-icon>
+                  Procesando...
                 </span>
               </button>
             </div>
@@ -121,7 +199,7 @@ import { toast } from 'ngx-sonner';
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class SpaceModalComponent implements OnChanges {
   @Input() isOpen = false;
@@ -131,39 +209,41 @@ export class SpaceModalComponent implements OnChanges {
 
   private fb = inject(FormBuilder);
   private spacesService = inject(SpacesService);
-  private cdr = inject(ChangeDetectorRef); // Inyectamos CDR para forzar actualización
+  private cdr = inject(ChangeDetectorRef);
 
+  // CORRECCIÓN 3: Nombres coinciden con el Backend (openingTime, closingTime)
   form = this.fb.group({
     name: ['', Validators.required],
     type: ['study', Validators.required],
     capacity: [10, [Validators.required, Validators.min(1)]],
     image: [''],
-    openTime: ['08:00', Validators.required],
-    closeTime: ['20:00', Validators.required]
+    openingTime: ['08:00', Validators.required],
+    closingTime: ['20:00', Validators.required],
   });
 
   loading = false;
 
-  get isEditing() { return !!this.initialData; }
+  get isEditing() {
+    return !!this.initialData;
+  }
 
   ngOnChanges(changes: SimpleChanges) {
-    // Detectamos cambios en isOpen
     if (changes['isOpen'] && this.isOpen) {
       this.resetForm();
-      // Forzamos la detección de cambios para asegurar que el modal se pinte inmediatamente
       this.cdr.detectChanges();
     }
   }
 
   resetForm() {
     if (this.initialData) {
+      // CORRECCIÓN 4: Al cargar datos para editar, usamos los nombres correctos
       this.form.patchValue({
         name: this.initialData.name,
         type: this.initialData.type,
         capacity: this.initialData.capacity,
         image: this.initialData.image || '',
-        openTime: this.initialData.openTime || '08:00',
-        closeTime: this.initialData.closeTime || '20:00'
+        openingTime: this.initialData.openingTime || '08:00', // Backend debe devolver openingTime
+        closingTime: this.initialData.closingTime || '20:00', // Backend debe devolver closingTime
       });
     } else {
       this.form.reset({
@@ -171,25 +251,32 @@ export class SpaceModalComponent implements OnChanges {
         type: 'study',
         capacity: 10,
         image: '',
-        openTime: '08:00',
-        closeTime: '20:00'
+        openingTime: '08:00',
+        closingTime: '20:00',
       });
     }
   }
 
   submit() {
     if (this.form.invalid) {
-      this.form.markAllAsTouched(); // Muestra errores visualmente
+      this.form.markAllAsTouched();
       return;
     }
 
-    const { openTime, closeTime } = this.form.value;
-    if (openTime && closeTime && openTime >= closeTime) {
-      toast.warning('Horario inválido', { description: 'La hora de cierre debe ser posterior a la de apertura.' });
+    // CORRECCIÓN 5: Desestructuramos con los nombres correctos para validación
+    const { openingTime, closingTime } = this.form.value;
+
+    // Validación de lógica de horario
+    if (openingTime && closingTime && openingTime >= closingTime) {
+      toast.warning('Horario inválido', {
+        description: 'La hora de cierre debe ser posterior a la de apertura.',
+      });
       return;
     }
 
     this.loading = true;
+
+    // El payload ya tendrá openingTime y closingTime automáticamente
     const payload = { ...this.form.value, image: this.form.value.image || null };
 
     const request = this.isEditing
@@ -205,7 +292,7 @@ export class SpaceModalComponent implements OnChanges {
       error: (err) => {
         toast.error('Error', { description: err.error?.message || 'No se pudo guardar.' });
         this.loading = false;
-      }
+      },
     });
   }
 

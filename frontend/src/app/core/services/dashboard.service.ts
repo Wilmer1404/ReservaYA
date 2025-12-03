@@ -30,4 +30,8 @@ export class DashboardService {
   rejectReservation(id: string | number) {
     return this.http.post(`${this.apiUrl}/reservations/${id}/reject`, {});
   }
+
+  getAnalytics() {
+    return this.http.get<any>(`${this.apiUrl}/analytics`);
+  }
 }
