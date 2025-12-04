@@ -29,6 +29,11 @@ export const routes: Routes = [
       {
         path: 'mis-reservas',
         loadComponent: () => import('./features/portal/mis-reservas/mis-reservas.component').then(m => m.MisReservasComponent)
+      },
+      // --- NUEVA RUTA AGREGADA ---
+      {
+        path: 'nueva-reserva',
+        loadComponent: () => import('./features/portal/reservar/portal-reservar.component').then(m => m.PortalReservarComponent)
       }
     ]
   },
