@@ -10,7 +10,8 @@ export interface ReservationDTO {
   spaceName: string;
   start: string; // ISO datetime
   end?: string; // ISO datetime
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  // CORRECTION: Updated statuses to match Backend (CONFIRMED, CANCELLED) and logic
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CONFIRMED' | 'CANCELLED';
   notes?: string;
 }
 

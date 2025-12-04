@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReservationsService } from '../../../core/services/reservations.service';
@@ -58,9 +58,9 @@ import { toast } from 'ngx-sonner';
               <button type="button" (click)="closeModal()" class="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-xl transition-colors">
                 Cancelar
               </button>
-              <button type="submit" [disabled]="form.invalid || loading" class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl disabled:opacity-50 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
-                <lucide-icon *ngIf="loading" name="loader-2" class="w-4 h-4 animate-spin"></lucide-icon>
-                {{ loading ? 'Procesando...' : 'Confirmar Reserva' }}
+              <button type="submit" [disabled]="form.invalid || loading()" class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl disabled:opacity-50 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
+                <lucide-icon *ngIf="loading()" name="loader-2" class="w-4 h-4 animate-spin"></lucide-icon>
+                {{ loading() ? 'Procesando...' : 'Confirmar Reserva' }}
               </button>
             </div>
           </form>
@@ -78,7 +78,9 @@ export class StudentReservationModalComponent {
   private fb = inject(FormBuilder);
   private reservationService = inject(ReservationsService);
 
-  loading = false;
+  // FIX: Usamos signal para evitar ExpressionChangedAfterItHasBeenCheckedError
+  loading = signal(false);
+
   minDate = new Date().toISOString().split('T')[0];
 
   form = this.fb.group({
@@ -93,18 +95,19 @@ export class StudentReservationModalComponent {
       return;
     }
 
-    // Evita el error NG0100 cambiando el estado antes de la validación
-    this.loading = true;
-
     const val = this.form.value;
-    const startIso = `${val.date}T${val.startTime}:00`;
-    const endIso = `${val.date}T${val.endTime}:00`;
 
+    // Validación básica de horas
     if (val.startTime! >= val.endTime!) {
-        toast.warning('Horario inválido', { description: 'La hora de fin debe ser posterior.' });
-        this.loading = false;
+        toast.warning('Horario inválido', { description: 'La hora de fin debe ser posterior a la de inicio.' });
         return;
     }
+
+    // Activamos loading signal
+    this.loading.set(true);
+
+    const startIso = `${val.date}T${val.startTime}:00`;
+    const endIso = `${val.date}T${val.endTime}:00`;
 
     const payload = {
       space: { id: this.space.id },
@@ -114,21 +117,24 @@ export class StudentReservationModalComponent {
 
     this.reservationService.create(payload).subscribe({
       next: () => {
-        toast.success('¡Reserva realizada!');
-        this.loading = false;
+        toast.success('¡Reserva realizada con éxito!');
+        this.loading.set(false);
         this.form.reset();
         this.saved.emit();
       },
       error: (err) => {
-        const msg = err.error?.message || 'Error al reservar. Puede que el horario esté ocupado.';
+        // Manejo de error 409 o 500 del backend
+        const msg = err.error?.message || 'Error al reservar. Verifica si el horario está disponible.';
         toast.error('No se pudo reservar', { description: msg });
-        this.loading = false;
+        this.loading.set(false);
       }
     });
   }
 
   closeModal() {
-    this.isOpen = false;
-    this.closed.emit();
+    if (!this.loading()) {
+      this.isOpen = false;
+      this.closed.emit();
+    }
   }
 }

@@ -31,11 +31,12 @@ export const appConfig: ApplicationConfig = {
 
     importProvidersFrom(LucideAngularModule.pick({
       Calendar, ArrowLeft, Loader2, AlertCircle, LayoutDashboard, LogOut, Settings, Plus, Edit, Trash2, X, ArrowRight, Save, Bell, Globe, Shield, Phone,
-      CalendarPlus, Info, // <--- Agregados aquí para que no falle
+      // --- REGISTRO ---
+      CalendarPlus, Info,
+      // ----------------
       Mail, Lock, User, Building2, CheckCircle2, Clock, Image, Type,
       MapPin, Users, BarChart3, CalendarCheck, CalendarClock, CalendarOff, PieChart, TrendingUp, ArrowUp,
       Dumbbell, Microscope, BookOpen
     }))
   ]
 };
-
