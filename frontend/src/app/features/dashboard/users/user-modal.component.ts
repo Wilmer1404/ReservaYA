@@ -13,7 +13,6 @@ import { toast } from 'ngx-sonner';
     <div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in">
       <div class="w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col">
 
-        <!-- Header -->
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
           <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
             <div class="p-2 bg-blue-100 rounded-lg text-blue-600">
@@ -27,27 +26,24 @@ import { toast } from 'ngx-sonner';
         </div>
 
         <div class="p-6">
-          <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+          <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5" autocomplete="off">
 
-            <!-- Nombre -->
             <div class="space-y-1.5">
               <label class="text-sm font-semibold text-slate-700">Nombre Completo</label>
               <div class="relative flex items-center">
                 <lucide-icon name="user" class="absolute left-3 w-4 h-4 text-slate-400 z-10"></lucide-icon>
-                <input formControlName="name" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" placeholder="Ej: Ana García" />
+                <input formControlName="name" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" placeholder="Ej: Ana García" autocomplete="off" />
               </div>
             </div>
 
-            <!-- Email -->
             <div class="space-y-1.5">
               <label class="text-sm font-semibold text-slate-700">Correo Electrónico</label>
               <div class="relative flex items-center">
                 <lucide-icon name="mail" class="absolute left-3 w-4 h-4 text-slate-400 z-10"></lucide-icon>
-                <input formControlName="email" type="email" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-slate-50 disabled:text-slate-500" placeholder="ana@institucion.edu" />
+                <input formControlName="email" type="email" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-slate-50 disabled:text-slate-500" placeholder="ana@institucion.edu" autocomplete="new-password" />
               </div>
             </div>
 
-            <!-- Rol -->
             <div class="space-y-1.5">
               <label class="text-sm font-semibold text-slate-700">Rol</label>
               <div class="relative flex items-center">
@@ -62,16 +58,14 @@ import { toast } from 'ngx-sonner';
               </div>
             </div>
 
-            <!-- Password -->
             <div *ngIf="!isEditing" class="space-y-1.5">
               <label class="text-sm font-semibold text-slate-700">Contraseña Temporal</label>
               <div class="relative flex items-center">
                 <lucide-icon name="lock" class="absolute left-3 w-4 h-4 text-slate-400 z-10"></lucide-icon>
-                <input formControlName="password" type="password" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" placeholder="••••••••" />
+                <input formControlName="password" type="password" class="pl-10 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" placeholder="••••••••" autocomplete="new-password" />
               </div>
             </div>
 
-            <!-- Footer -->
             <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
               <button type="button" (click)="closeModal()" class="px-4 py-2 text-sm font-medium text-slate-700 bg-whiteHV border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
                 Cancelar
