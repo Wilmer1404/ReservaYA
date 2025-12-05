@@ -11,7 +11,6 @@ export interface LoginRequest {
   password?: string;
 }
 
-// Basado en tu RegisterRequest.java
 export interface RegisterRequest {
   institutionName: string;
   institutionType: string;

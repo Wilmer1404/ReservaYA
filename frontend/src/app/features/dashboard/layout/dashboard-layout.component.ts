@@ -9,14 +9,11 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
   imports: [CommonModule, RouterOutlet, SidebarComponent],
   template: `
     <div class="min-h-screen bg-slate-50 flex">
-      <!-- Sidebar fijo -->
       <app-sidebar />
 
-      <!-- Área de contenido principal -->
-      <!-- ml-64 empuja el contenido para que no quede debajo del sidebar -->
+
       <main class="flex-1 ml-64 transition-all min-h-screen">
         <div class="container mx-auto p-8">
-          <!-- Aquí se renderizan tus componentes (Spaces, Users, etc.) -->
           <router-outlet></router-outlet>
         </div>
       </main>

@@ -115,7 +115,6 @@ export class MisReservasComponent {
     this.loading.set(true);
     this.reservationsService.getMyReservations().subscribe({
       next: (data) => {
-        // CORRECCIÓN CRÍTICA: Mapeo manual para obtener datos anidados
         const mappedData = data.map((item: any) => ({
           ...item,
           spaceName: item.space?.name || 'Espacio desconocido',

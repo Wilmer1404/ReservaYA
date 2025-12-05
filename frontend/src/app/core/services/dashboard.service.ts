@@ -13,12 +13,10 @@ export class DashboardService {
     return this.http.get<DashboardSummaryDTO>(`${this.apiUrl}/summary`);
   }
 
-  // Returns events compatible with FullCalendar
   getEvents() {
     return this.http.get<any[]>(`${this.apiUrl}/events`);
   }
 
-  // Reservations list for management table
   getReservations() {
     return this.http.get<any[]>(`${this.apiUrl}/reservations`);
   }

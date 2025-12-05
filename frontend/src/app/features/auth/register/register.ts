@@ -5,7 +5,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/auth-card/auth-card.component';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { toast } from 'ngx-sonner'; // Importar toast
+import { toast } from 'ngx-sonner';
 
 @Component({
   selector: 'app-register',
@@ -41,7 +41,6 @@ export class RegisterComponent {
   onSubmit() {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
-      // Toast de advertencia
       toast.warning('Formulario incompleto', {
         description: 'Por favor, revisa los campos marcados en rojo.',
       });

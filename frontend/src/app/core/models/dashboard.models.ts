@@ -8,9 +8,8 @@ export interface ReservationDTO {
   id: string | number;
   userName: string;
   spaceName: string;
-  start: string; // ISO datetime
-  end?: string; // ISO datetime
-  // CORRECTION: Updated statuses to match Backend (CONFIRMED, CANCELLED) and logic
+  start: string;
+  end?: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CONFIRMED' | 'CANCELLED';
   notes?: string;
 }

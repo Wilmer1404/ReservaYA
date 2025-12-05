@@ -97,7 +97,6 @@ export class ReservationsComponent implements OnInit {
   private reservationsService = inject(ReservationsService);
   private dashboardService = inject(DashboardService);
 
-  // CORRECCIÓN: Usamos Signals para reactividad instantánea
   reservations = signal<ReservationDTO[]>([]);
   loading = signal(true);
 
@@ -118,7 +117,6 @@ export class ReservationsComponent implements OnInit {
           status: item.status
         }));
 
-        // Ordenar: más recientes primero
         mapped.sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
 
         this.reservations.set(mapped);

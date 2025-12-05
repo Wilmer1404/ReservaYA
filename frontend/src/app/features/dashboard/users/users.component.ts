@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UsersService } from '../../../core/services/users.service';
 import { UserModalComponent } from './user-modal.component';
-import { LucideAngularModule } from 'lucide-angular'; // Importar iconos
+import { LucideAngularModule } from 'lucide-angular'; 
 
 @Component({
   selector: 'app-users',

@@ -139,7 +139,6 @@ export class HorariosComponent implements OnInit {
     if (spaceId === 'all') {
       this.filteredReservations.set(this.reservations());
     } else {
-      // CORRECCIÓN: Filtro seguro
       this.filteredReservations.set(
         this.reservations().filter(r => r.space?.id == spaceId)
       );

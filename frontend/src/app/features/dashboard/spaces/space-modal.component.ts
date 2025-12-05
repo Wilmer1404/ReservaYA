@@ -130,7 +130,6 @@ import { toast } from 'ngx-sonner';
                   <label class="text-xs font-medium text-slate-500 uppercase tracking-wide"
                     >Apertura</label
                   >
-                  <!-- CORRECCIÓN 1: formControlName="openingTime" -->
                   <input
                     type="time"
                     formControlName="openingTime"
@@ -141,7 +140,6 @@ import { toast } from 'ngx-sonner';
                   <label class="text-xs font-medium text-slate-500 uppercase tracking-wide"
                     >Cierre</label
                   >
-                  <!-- CORRECCIÓN 2: formControlName="closingTime" -->
                   <input
                     type="time"
                     formControlName="closingTime"
@@ -211,7 +209,6 @@ export class SpaceModalComponent implements OnChanges {
   private spacesService = inject(SpacesService);
   private cdr = inject(ChangeDetectorRef);
 
-  // CORRECCIÓN 3: Nombres coinciden con el Backend (openingTime, closingTime)
   form = this.fb.group({
     name: ['', Validators.required],
     type: ['study', Validators.required],
@@ -236,14 +233,13 @@ export class SpaceModalComponent implements OnChanges {
 
   resetForm() {
     if (this.initialData) {
-      // CORRECCIÓN 4: Al cargar datos para editar, usamos los nombres correctos
       this.form.patchValue({
         name: this.initialData.name,
         type: this.initialData.type,
         capacity: this.initialData.capacity,
         image: this.initialData.image || '',
-        openingTime: this.initialData.openingTime || '08:00', // Backend debe devolver openingTime
-        closingTime: this.initialData.closingTime || '20:00', // Backend debe devolver closingTime
+        openingTime: this.initialData.openingTime || '08:00',
+        closingTime: this.initialData.closingTime || '20:00',
       });
     } else {
       this.form.reset({
@@ -263,7 +259,6 @@ export class SpaceModalComponent implements OnChanges {
       return;
     }
 
-    // CORRECCIÓN 5: Desestructuramos con los nombres correctos para validación
     const { openingTime, closingTime } = this.form.value;
 
     // Validación de lógica de horario
@@ -276,7 +271,6 @@ export class SpaceModalComponent implements OnChanges {
 
     this.loading = true;
 
-    // El payload ya tendrá openingTime y closingTime automáticamente
     const payload = { ...this.form.value, image: this.form.value.image || null };
 
     const request = this.isEditing

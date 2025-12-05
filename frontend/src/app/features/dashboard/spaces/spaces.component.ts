@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpacesService } from '../../../core/services/spaces.service';
 import { SpaceModalComponent } from './space-modal.component';
-// Importamos los iconos de Lucide que usaremos
 import { LucideAngularModule, Plus, Edit, Trash2, Dumbbell, Microscope, BookOpen, Users, MapPin } from 'lucide-angular';
 
 @Component({
@@ -88,7 +87,6 @@ import { LucideAngularModule, Plus, Edit, Trash2, Dumbbell, Microscope, BookOpen
 export class SpacesComponent {
   private spacesService = inject(SpacesService);
 
-  // Usamos Signals para mejor rendimiento (Angular 18 modern practice)
   spaces = signal<any[]>([]);
   loading = signal<boolean>(true);
 

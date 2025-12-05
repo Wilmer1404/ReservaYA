@@ -16,7 +16,6 @@ import { LucideAngularModule } from 'lucide-angular';
 
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <!-- Tarjeta: Nueva Reserva (AHORA ACTIVA) -->
         <a routerLink="/portal/nueva-reserva" class="block bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-300 transition-all group relative overflow-hidden cursor-pointer no-underline">
 
           <div class="h-12 w-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4 shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-colors">

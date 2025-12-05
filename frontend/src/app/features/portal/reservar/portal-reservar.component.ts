@@ -103,6 +103,5 @@ export class PortalReservarComponent implements OnInit {
 
   onSaved() {
     this.isModalOpen = false;
-    // Opcional: Redirigir a mis reservas
   }
 }

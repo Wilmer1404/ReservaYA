@@ -123,7 +123,6 @@ export class StudentReservationModalComponent {
         this.saved.emit();
       },
       error: (err) => {
-        // Manejo de error 409 o 500 del backend
         const msg = err.error?.message || 'Error al reservar. Verifica si el horario está disponible.';
         toast.error('No se pudo reservar', { description: msg });
         this.loading.set(false);

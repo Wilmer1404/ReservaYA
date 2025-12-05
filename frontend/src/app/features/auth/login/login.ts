@@ -5,7 +5,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AuthCardComponent } from '../../../shared/components/auth-card/auth-card.component';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { toast } from 'ngx-sonner'; // Importar toast
+import { toast } from 'ngx-sonner';
 
 @Component({
   selector: 'app-login',
@@ -40,8 +40,7 @@ export class LoginComponent {
         });
 
         this.isLoading.set(false);
-        // La redirección ya la maneja el servicio, pero por seguridad:
-        // this.router.navigate(['/dashboard']);
+
       },
       error: (err) => {
         toast.error('Error de acceso', {

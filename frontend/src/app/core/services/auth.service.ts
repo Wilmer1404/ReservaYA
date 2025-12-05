@@ -12,7 +12,6 @@ export class AuthService {
   private router = inject(Router);
   private apiUrl = 'http://localhost:8080/api/v1/auth';
 
-  // --- SIGNALS (Estado Reactivo) ---
   private currentUserSignal = signal<AuthResponse | null>(this.getUserFromStorage());
 
   readonly currentUser = this.currentUserSignal.asReadonly();
@@ -22,7 +21,6 @@ export class AuthService {
   constructor() {}
 
   login(credentials: LoginRequest) {
-    // Esto hará POST a http://localhost:8080/auth/login
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
         this.saveToStorage(response);
@@ -33,7 +31,6 @@ export class AuthService {
   }
 
   register(data: RegisterRequest) {
-    // Esto hará POST a http://localhost:8080/auth/register
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data);
   }
 
@@ -53,7 +50,6 @@ export class AuthService {
   }
 
   private redirectBasedOnRole(role: string) {
-    // Ajuste según los roles de tu Enum Role.java (ADMIN, STUDENT, etc.)
     if (role === 'ADMIN') {
       this.router.navigate(['/dashboard']);
     } else {

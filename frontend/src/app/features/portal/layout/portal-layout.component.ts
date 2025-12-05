@@ -10,11 +10,9 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
   template: `
     <div class="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <!-- Navbar Superior -->
       <header class="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
         <div class="container mx-auto px-4 h-16 flex items-center justify-between">
 
-          <!-- Logo -->
           <div class="flex items-center gap-2 font-bold text-xl text-blue-600 cursor-pointer" routerLink="/portal">
             <div class="bg-blue-600 text-white p-1.5 rounded-lg flex items-center justify-center shadow-sm">
               <lucide-icon name="calendar" class="w-5 h-5"></lucide-icon>
@@ -22,7 +20,6 @@ import { AuthService } from '../../../core/services/auth.service';
             <span class="tracking-tight hidden sm:inline-block">ReservaYA</span>
           </div>
 
-          <!-- Navegación Escritorio -->
           <nav class="hidden md:flex items-center gap-1 text-sm font-medium text-slate-600">
             <a routerLink="/portal"
                routerLinkActive="text-blue-600 bg-blue-50"
@@ -37,7 +34,6 @@ import { AuthService } from '../../../core/services/auth.service';
             </a>
           </nav>
 
-          <!-- Perfil / Logout -->
           <div class="flex items-center gap-4">
             <div class="hidden md:flex flex-col items-end leading-tight">
               <span class="text-sm font-semibold text-slate-900">Estudiante</span>
@@ -52,7 +48,6 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
       </header>
 
-      <!-- Contenido Principal -->
       <main class="flex-1 container mx-auto px-4 py-8 max-w-6xl animate-in fade-in slide-in-from-bottom-4 duration-500">
         <router-outlet></router-outlet>
       </main>
